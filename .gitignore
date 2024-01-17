@@ -1,0 +1,10 @@
+#ignore VS directory
+.vs/*
+
+#ignore output and intermediate directories
+x64/*
+x86/*
+RaycastEngine/obj/*
+
+#User files
+*.vcxproj.user
