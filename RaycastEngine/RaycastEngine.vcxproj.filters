@@ -18,5 +18,31 @@
     <ClCompile Include="Main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Application.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="World.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Int2D.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Float2D.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Application.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="World.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Int2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Float2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
