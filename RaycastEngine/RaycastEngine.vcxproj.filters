@@ -30,6 +30,12 @@
     <ClCompile Include="Float2D.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Entity.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EntityQueue.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h">
@@ -42,6 +48,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Float2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Entity.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EntityQueue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

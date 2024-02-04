@@ -2,7 +2,7 @@
 
 struct Float2D
 {
-	float X, Y;
+	double X, Y;
 };
 
 struct Float2D fAdd(struct Float2D, struct Float2D);

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Entity.h"
+#include "EntityQueue.h"
 #include "Int2D.h"
 #include "Float2D.h"
 
@@ -9,20 +11,11 @@ struct sTile_Data
 	unsigned char Type;
 };
 
-struct sEntity_Data 
-{
-	struct sLevel_Data* Lvl;
-	struct Float2D Location;
-	struct Float2D Direction;
-	unsigned char Type;
-};
-
 struct sLevel_Data
 {
-	struct sEntity_Data* EntityData;
+	struct sEntity_Queue* EntityQueue;
 	struct sTile_Data* TileData;
 	struct Int2D Size;
-	unsigned int EntityCount;
 };
 
 struct sWorld_Data
@@ -37,6 +30,7 @@ struct sWorld_Data* CreateWorldHardcode();
 struct sWorld_Data* CreateWorldFromFile(const char*);
 void WorldToFile(struct sWorld_Data*, const char*);
 void DestroyWorld(struct sWorld_Data*);
+void SetPlayerEntity(struct sWorld_Data*, struct sEntity_Data*);
 
 //Getters for the world data.
 inline struct sLevel_Data* GetLevelData(struct sWorld_Data* wrld_data, unsigned char lvl) 
