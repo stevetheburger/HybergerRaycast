@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "Int2D.h"
 #include "World.h"
+#include "Entity.h"
 
 #define NUM_LVL 1
 #define LEVEL_DIM (unsigned int[]){16, 16}
@@ -96,6 +97,8 @@ struct sWorld_Data* CreateWorldFromFile(const char *file_path)
 {
 	//The return variable.
 	struct sWorld_Data* wrld_data = NULL;
+	struct sEntity_Data* entity_buffer = NULL;
+	void* cpy_buffer = NULL;
 	FILE* file_ptr;
 
 	//Open file and make sure it exists.
@@ -104,7 +107,7 @@ struct sWorld_Data* CreateWorldFromFile(const char *file_path)
 		return NULL;
 
 	//Create buffer for the dimensions of the world.
-	void *cpy_buffer = malloc(sizeof(struct Int2D));
+	cpy_buffer = malloc(sizeof(struct Int2D));
 	if(cpy_buffer == NULL)
 		goto BAD_CREATE;
 
@@ -123,7 +126,10 @@ struct sWorld_Data* CreateWorldFromFile(const char *file_path)
 	if(wrld_data->LevelData == NULL)
 		goto BAD_CREATE;
 	
-	struct sEntity_Data* entity_buffer = NULL;
+	entity_buffer = CreateDefaultEntity();
+	if(entity_buffer == NULL)
+		goto BAD_CREATE;
+
 	unsigned char count = 0;
 	while(count < wrld_data->LevelCount)
 	{
@@ -147,7 +153,6 @@ struct sWorld_Data* CreateWorldFromFile(const char *file_path)
 
 		for(int i = 0; i < *(int *)cpy_buffer; ++i)
 		{
-			entity_buffer = malloc(sizeof(struct sEntity_Data));
 			if(entity_buffer == NULL)
 			{
 				free(entity_buffer);
@@ -156,17 +161,24 @@ struct sWorld_Data* CreateWorldFromFile(const char *file_path)
 
 			if(fread(entity_buffer, sizeof(struct sEntity_Data), 1, file_ptr) != 1)
 				goto BAD_CREATE;
+			
 
-			if(entity_buffer->Controller.IsPlayer) wrld_data->Player = entity_buffer;
-			EnqueueEntity(wrld_data->LevelData[count].EntityQueue, entity_buffer);
-			entity_buffer = NULL;
+
+			if(entity_buffer->Controller.IsPlayer) 
+			{	
+				wrld_data->Player = EntityDeepCopy(entity_buffer);
+				EnqueueEntity(wrld_data->LevelData[count].EntityQueue, wrld_data->Player);
+			}
+			else
+			{
+				EnqueueEntity(wrld_data->LevelData[count].EntityQueue, EntityDeepCopy(entity_buffer));
+			}
 		}
-
-		free(entity_buffer);
 
 		++count;
 	}
 
+	free(entity_buffer);
 	free(cpy_buffer);
 	fclose(file_ptr);
 
@@ -177,6 +189,7 @@ struct sWorld_Data* CreateWorldFromFile(const char *file_path)
 	if(cpy_buffer != NULL) free(cpy_buffer);
 	if(file_ptr != NULL) fclose(file_ptr);
 	if(wrld_data != NULL) DestroyWorld(wrld_data);
+	if(entity_buffer != NULL) free(entity_buffer);
 	return NULL;
 }
 
@@ -307,8 +320,5 @@ void DestroyWorld(struct sWorld_Data* wrld)
 void SetPlayerEntity(struct sWorld_Data* wrld, struct sEntity_Data* plyr_ent)
 {
 	if(wrld != NULL && plyr_ent != NULL)
-	{
 		wrld->Player = plyr_ent;
-		wrld->Player->Controller.w_down = wrld->Player->Controller.d_down = wrld->Player->Controller.s_down = wrld->Player->Controller.a_down = wrld->Player->Controller.q_down = wrld->Player->Controller.e_down = 0;
-	}
 }

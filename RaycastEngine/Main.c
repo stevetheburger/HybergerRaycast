@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <SDL.h>
 #include <time.h>
 #include "Application.h"
@@ -26,18 +27,18 @@ void stop()
 	SetRunState(_app, 0);
 }
 
-void input(double delta)
+void input()
 {
 	static SDL_Event event;
-	
-	//Do player input.
-	DoInput(&_plyr_ent->Controller);
 
 	while(SDL_PollEvent(&event))
 	{
 		//Test for quit.
 		if(event.type == SDL_QUIT)
 			stop();
+		//Otherwise, pass events through to player object.
+		else
+			DoInput(&_plyr_ent->Controller, &event);
 	}
 }
 
@@ -106,11 +107,11 @@ void draw()
 		SDL_RenderPresent(renderer);
 	}
 	else
-		exit(1);
+		exit(EXIT_FAILURE);
 }
 
 //Garbage collection method for all dynamically allocated memory at close.
-void dispose()
+void dispose(void)
 {
 	DestroyApplication(_app);
 	DestroyWorld(_wrld);
@@ -120,11 +121,11 @@ void setup()
 {
 	//Set exit to call garbage collection before close.
 	if(atexit(dispose) != 0)
-		exit(1);
+		exit(EXIT_FAILURE);
 
 	//Initialize SDL library.
 	if(SDL_Init(SDL_INIT_VIDEO) != 0)
-		exit(1);
+		exit(EXIT_FAILURE);
 	
 	_wrld = CreateWorldFromFile(WRLD_FILE);
 	if(_wrld == NULL)
@@ -136,14 +137,14 @@ void setup()
 
 	_plyr_ent = _wrld->Player;
 	if(_plyr_ent == NULL)
-		exit(1);
+		exit(EXIT_FAILURE);
 	if(_plyr_ent->Lvl >= _wrld->LevelCount)
-		exit(1);
+		exit(EXIT_FAILURE);
 
 	_current_lvl = &_wrld->LevelData[_plyr_ent->Lvl];
 
 	if((_app = CreateApplication(WINDOW_TITLE, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT)) == NULL)
-		exit(1);
+		exit(EXIT_FAILURE);
 }
 
 //Entry point for program.
@@ -153,24 +154,23 @@ int main(int argc, char* argv[])
 	setup();
 
 	clock_t last, current;
-	double sec_elapsed = 0;
 	current = 0;
 	last = clock();
 
 	//Game loop. Run as long as run_state is 1;
 	while(_app->run_state)
 	{
-		current = clock();
-		sec_elapsed = (current - last)/CLOCKS_PER_SEC;		
-		last = current;
+		current = clock();	
 
-		input(sec_elapsed);
-		update(sec_elapsed);
+		input();
+		update(((double)current - last)/CLOCKS_PER_SEC);
 		draw();
+
+		last = current;
 	}
 
 	//Terminate program normally.
-	exit(0);
+	exit(EXIT_SUCCESS);
 	
 	//In case exit fails erroneously somehow.
 	return 1;

@@ -8,12 +8,18 @@
 #define PLAYER_FEET_PER_SEC 3
 #define PLAYER_TURN_RATE_PER_SEC 2 * M_PI
 #define FULL_CIRCLE 2 * M_PI
+#define W_KEY 0b00000001
+#define A_KEY 0b00000010
+#define S_KEY 0b00000100
+#define D_KEY 0b00001000
+#define Q_KEY 0b00010000
+#define E_KEY 0b00100000
 
 //A special controller structure for the player. May get used for AI as well.
 struct sPlayer_Controller
 {
 	char IsPlayer;
-	char w_down, d_down, s_down, a_down, q_down, e_down;
+	char Keys;
 };
 
 struct sEntity_Data 
@@ -27,92 +33,94 @@ struct sEntity_Data
 };
 
 //Initialization and teardown.
+struct sEntity_Data* CreateDefaultEntity();
 struct sEntity_Data* CreateEntity(struct Float2D, double, unsigned char, unsigned char, char);
+struct sEntity_Data* EntityDeepCopy(struct sEntity_Data*);
 struct sEntity_Data* CreatePlayerEntity(struct Float2D, double, unsigned char, char);
 void DestroyEntity(struct sEntity_Data *);
 
 //Runtime functions
-inline void DoInput(struct sPlayer_Controller* cntrl)
+inline void DoInput(struct sPlayer_Controller* cntrl, SDL_Event* event)
 {
 	if(cntrl->IsPlayer)
 	{
-		static SDL_Event event;
-	
-		while(SDL_PollEvent(&event))
+		//Get key state if down.
+		if(event->type == SDL_KEYDOWN)
 		{
-			//Get key state if down.
-			if(event.type == SDL_KEYDOWN)
+			if(event->key.keysym.sym == SDLK_w)
 			{
-				if(event.key.keysym.sym == SDLK_w)
-				{
-					cntrl->w_down = 1;
-				}
-				else if(event.key.keysym.sym == SDLK_d)
-				{
-					cntrl->d_down = 1;
-				}
-				else if(event.key.keysym.sym == SDLK_s)
-				{
-					cntrl->s_down = 1;
-				}
-				else if(event.key.keysym.sym == SDLK_a)
-				{
-					cntrl->a_down = 1;
-				}
-				else if(event.key.keysym.sym == SDLK_q)
-				{
-					cntrl->q_down = 1;
-				}
-				else if(event.key.keysym.sym == SDLK_e)
-				{
-					cntrl->e_down = 1;
-				}
+				cntrl->Keys |= W_KEY;
+				if(cntrl->Keys & S_KEY) 
+					cntrl->Keys &= ~S_KEY;
 			}
-			//Get key state if up.
-			else if(event.type == SDL_KEYUP)
+			else if(event->key.keysym.sym == SDLK_d)
 			{
-				if(event.key.keysym.sym == SDLK_w)
-				{
-					cntrl->w_down = 0;
-				}
-				else if(event.key.keysym.sym == SDLK_d)
-				{
-					cntrl->d_down = 0;
-				}
-				else if(event.key.keysym.sym == SDLK_s)
-				{
-					cntrl->s_down = 0;
-				}
-				else if(event.key.keysym.sym == SDLK_a)
-				{
-					cntrl->a_down = 0;
-				}
-				else if(event.key.keysym.sym == SDLK_q)
-				{
-					cntrl->q_down = 0;
-				}
-				else if(event.key.keysym.sym == SDLK_e)
-				{
-					cntrl->e_down = 0;
-				}
+				cntrl->Keys |= D_KEY;
+				if(cntrl->Keys & A_KEY) 
+					cntrl->Keys &= ~A_KEY;				
 			}
-			////Detect mouse-x movement.
-			//else if(event.type == SDL_MOUSEMOTION)
-			//{
-			//	printf("%i\n", event.motion.xrel);
-			//	cntrl->mouse_x += event.motion.xrel * delta;
-			//	if(cntrl->mouse_x >= 360.0f) cntrl->mouse_x -= 360.0f;
-			//	else if(cntrl->mouse_x < 0.0f) cntrl->mouse_x += 360.0f;
-			//}
+			else if(event->key.keysym.sym == SDLK_s)
+			{
+				cntrl->Keys |= S_KEY;
+				if(cntrl->Keys & W_KEY) 
+					cntrl->Keys &= ~W_KEY;
+			}
+			else if(event->key.keysym.sym == SDLK_a)
+			{
+				cntrl->Keys |= A_KEY;
+				if(cntrl->Keys & D_KEY) 
+					cntrl->Keys &= ~D_KEY;
+			}
+			else if(event->key.keysym.sym == SDLK_q)
+			{
+				cntrl->Keys |= Q_KEY;
+				if(cntrl->Keys & E_KEY) 
+					cntrl->Keys &= ~E_KEY;
+			}
+			else if(event->key.keysym.sym == SDLK_e)
+			{
+				cntrl->Keys |= E_KEY;
+				if(cntrl->Keys & D_KEY) 
+					cntrl->Keys &= ~D_KEY;
+			}
+		}
+		//Get key state if up.
+		else if(event->type == SDL_KEYUP)
+		{
+			if(event->key.keysym.sym == SDLK_w)
+			{
+				cntrl->Keys &= ~W_KEY;
+			}
+			else if(event->key.keysym.sym == SDLK_d)
+			{
+				cntrl->Keys &= ~D_KEY;
+			}
+			else if(event->key.keysym.sym == SDLK_s)
+			{
+				cntrl->Keys &= ~S_KEY;
+			}
+			else if(event->key.keysym.sym == SDLK_a)
+			{
+				cntrl->Keys &= ~A_KEY;
+			}
+			else if(event->key.keysym.sym == SDLK_q)
+			{
+				cntrl->Keys &= ~Q_KEY;
+			}
+			else if(event->key.keysym.sym == SDLK_e)
+			{
+				cntrl->Keys &= ~E_KEY;
+			}
 		}
 	}
+	printf("%i\n", cntrl->Keys);
 }
 
 inline void DoMove(struct sEntity_Data* ent, double delta)
 {
 	static struct Float2D Direction;
 
-	if(ent->Controller.q_down)
+	if(ent->Controller.Keys & Q_KEY)
 	{
 		ent->Look -= PLAYER_TURN_RATE_PER_SEC * delta;
 		if(ent->Look >= FULL_CIRCLE)
@@ -120,7 +128,7 @@ inline void DoMove(struct sEntity_Data* ent, double delta)
 		else if(ent->Look < 0)
 			ent->Look += FULL_CIRCLE;
 	}
-	if(ent->Controller.e_down)
+	if(ent->Controller.Keys & E_KEY)
 	{
 		ent->Look += PLAYER_TURN_RATE_PER_SEC * delta;
 		if(ent->Look >= FULL_CIRCLE)
@@ -133,22 +141,22 @@ inline void DoMove(struct sEntity_Data* ent, double delta)
 	Direction.Y = sin(ent->Look);
 
 	//Calculate velocity from key state.
-	if(ent->Controller.w_down)
+	if(ent->Controller.Keys & W_KEY)
 	{
 		ent->Velocity.X += Direction.X;
 		ent->Velocity.Y += Direction.Y;
 	}
-	if(ent->Controller.s_down)
+	if(ent->Controller.Keys & S_KEY)
 	{
 		ent->Velocity.X += -Direction.X;
 		ent->Velocity.Y += -Direction.Y;
 	}
-	if(ent->Controller.d_down)
+	if(ent->Controller.Keys & D_KEY)
 	{
 		ent->Velocity.X += -Direction.Y;
 		ent->Velocity.Y += Direction.X;
 	}
-	if(ent->Controller.a_down)
+	if(ent->Controller.Keys & A_KEY)
 	{
 		ent->Velocity.X += Direction.Y;
 		ent->Velocity.Y += -Direction.X;
