@@ -1,23 +1,22 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <SDL.h>
+#include <stdlib.h>
 #include <time.h>
 #include "Application.h"
 #include "World.h"
 #include "Entity.h"
+#include "Overhead.h"
+#include "Viewport.h"
 
 //Window & hardware constants.
 #define WRLD_FILE ".\\test"
 #define WINDOW_TITLE "Raycast Test"
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
-#define TILE_WIDTH 32
-#define TILE_HEIGHT 32
 
 struct sApplication* _app;
 struct sWorld_Data* _wrld;
-struct sLevel_Data* _current_lvl;
-struct sEntity_Data* _plyr_ent;
+//struct sEntity_Data* _plyr_ent;
 //struct sPlayer_Controller* _cntrl;
 
 //Function to call in order to terminate program normally.
@@ -38,14 +37,14 @@ void input()
 			stop();
 		//Otherwise, pass events through to player object.
 		else
-			DoInput(&_plyr_ent->Controller, &event);
+			DoInput(&_wrld->Player->Controller, &event);
 	}
 }
 
 void update(double delta)
 {
 	//Move player.
-	DoMove(_plyr_ent, delta);
+	DoMove(_wrld->Player, delta);
 }
 
 void draw()
@@ -53,55 +52,9 @@ void draw()
 	struct SDL_Renderer* renderer = GetApplicationRenderer(_app);
 	if(renderer != NULL)
 	{
-		//Set up variables.
-		SDL_Rect rect;
-		rect.w = TILE_WIDTH;
-		rect.h = TILE_HEIGHT;
-		rect.x = rect.y = 0;
-		int count_x, count_y;
-		count_x = count_y = 0;
+		DrawOverheadView(renderer, &_wrld, (struct Int2D){0,0}, (struct Int2D){SCREEN_WIDTH/2, SCREEN_HEIGHT});
 
-		//Draw background
-		SDL_SetRenderDrawColor(renderer, 0, 0, 127, SDL_ALPHA_OPAQUE);
-		SDL_RenderClear(renderer);
-
-		while(count_y < _current_lvl->Size.Y)
-		{
-			rect.y = TILE_HEIGHT * count_y;
-			while(count_x < _current_lvl->Size.X)
-			{
-				rect.x = TILE_WIDTH * count_x;
-
-				if(_current_lvl->TileData[count_y * _current_lvl->Size.X + count_x].Type == 0)
-					SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
-				else if(_current_lvl->TileData[count_y * _current_lvl->Size.X + count_x].Type == 1)
-					SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
-				else
-					SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
-
-				SDL_RenderFillRect(renderer, &rect);
-
-				++count_x;
-			}
-			rect.x = 0;
-			count_x = 0;
-			++count_y;
-		}
-
-		struct Int2D position, endpoint;
-		position.X = _plyr_ent->Location.X * TILE_WIDTH;
-		position.Y = _plyr_ent->Location.Y * TILE_HEIGHT;
-		endpoint.X = position.X + cos(_plyr_ent->Look) * 100;
-		endpoint.Y = position.Y + sin(_plyr_ent->Look) * 100;
-		SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
-		SDL_RenderDrawLine(renderer, position.X, position.Y, endpoint.X, endpoint.Y);
-
-		SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
-		rect.w = PLAYER_WIDTH;
-		rect.h = PLAYER_HEIGHT;
-		rect.x = position.X - PLAYER_WIDTH / 2;
-		rect.y = position.Y - PLAYER_HEIGHT / 2;
-		SDL_RenderFillRect(renderer, &rect);
+		DrawFirstPersonView(renderer, &_wrld, (struct Int2D){SCREEN_WIDTH/2 + 1,0}, (struct Int2D){SCREEN_WIDTH/2, SCREEN_HEIGHT});
 
 		//Show.
 		SDL_RenderPresent(renderer);
@@ -135,13 +88,11 @@ void setup()
 		WorldToFile(_wrld, WRLD_FILE);
 	}
 
-	_plyr_ent = _wrld->Player;
-	if(_plyr_ent == NULL)
-		exit(EXIT_FAILURE);
-	if(_plyr_ent->Lvl >= _wrld->LevelCount)
-		exit(EXIT_FAILURE);
-
-	_current_lvl = &_wrld->LevelData[_plyr_ent->Lvl];
+	//_plyr_ent = _wrld->Player;
+	//if(_plyr_ent == NULL)
+	//	exit(EXIT_FAILURE);
+	//if(_plyr_ent->Lvl >= _wrld->LevelCount)
+	//	exit(EXIT_FAILURE);
 
 	if((_app = CreateApplication(WINDOW_TITLE, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT)) == NULL)
 		exit(EXIT_FAILURE);

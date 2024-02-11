@@ -113,7 +113,6 @@ inline void DoInput(struct sPlayer_Controller* cntrl, SDL_Event* event)
 			}
 		}
 	}
-	printf("%i\n", cntrl->Keys);
 }
 
 inline void DoMove(struct sEntity_Data* ent, double delta)

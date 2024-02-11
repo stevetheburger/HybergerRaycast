@@ -179,6 +179,8 @@
     <ClCompile Include="Float2D.c" />
     <ClCompile Include="Int2D.c" />
     <ClCompile Include="Main.c" />
+    <ClCompile Include="Overhead.c" />
+    <ClCompile Include="Viewport.c" />
     <ClCompile Include="World.c" />
   </ItemGroup>
   <ItemGroup>
@@ -187,6 +189,8 @@
     <ClInclude Include="EntityQueue.h" />
     <ClInclude Include="Float2D.h" />
     <ClInclude Include="Int2D.h" />
+    <ClInclude Include="Overhead.h" />
+    <ClInclude Include="Viewport.h" />
     <ClInclude Include="World.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
