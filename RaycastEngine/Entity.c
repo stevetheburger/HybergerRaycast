@@ -50,9 +50,10 @@ struct sEntity_Data* CreatePlayerEntity(struct Float2D loc, double dir, unsigned
 	return CreateEntity(loc, dir, lvl, 1, is_player);
 }
 
-void DestroyEntity(struct sEntity_Data* ent_ptr)
+void DestroyEntity(struct sEntity_Data** ent_ptr)
 {
-	free(ent_ptr);
+	if(ent_ptr != NULL && *ent_ptr != NULL)
+		free(*ent_ptr);
 }
 
 struct sEntity_Data* EntityDeepCopy(struct sEntity_Data* original)

@@ -15,7 +15,7 @@ struct sEntity_Queue
 };
 
 struct sEntity_Queue* CreateEntityQueue();
-void DestroyEntityQueue(struct sEntity_Queue*);
+void DestroyEntityQueue(struct sEntity_Queue**);
 
 void EnqueueEntity(struct sEntity_Queue*, struct sEntity_Data*);
 struct sEntity_Data* DequeueEntity(struct sEntity_Queue*);

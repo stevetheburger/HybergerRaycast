@@ -12,18 +12,18 @@ struct sEntity_Queue* CreateEntityQueue()
 
 	return ret_val;
 }
-void DestroyEntityQueue(struct sEntity_Queue* queue)
+void DestroyEntityQueue(struct sEntity_Queue** queue_ptr)
 {
-	if(queue != NULL)
+	if(queue_ptr != NULL && *queue_ptr != NULL)
 	{
 		struct sEntity_Data* current = NULL;
 		do
 		{
-			if((current = DequeueEntity(queue)) != NULL) 
-				free(current);
-		}
+			current = DequeueEntity(*queue_ptr);
+				DestroyEntity(&current);
+		} 
 		while(current != NULL);
-		free(queue);
+		free(*queue_ptr);
 	}
 }
 

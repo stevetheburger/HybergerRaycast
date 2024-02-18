@@ -2,6 +2,8 @@
 
 #include <SDL.h>
 #include "Float2D.h"
+#include "Int2D.h"
+#include "World.h"
 
 #define PLAYER_WIDTH 4
 #define PLAYER_HEIGHT 4
@@ -37,7 +39,7 @@ struct sEntity_Data* CreateDefaultEntity();
 struct sEntity_Data* CreateEntity(struct Float2D, double, unsigned char, unsigned char, char);
 struct sEntity_Data* EntityDeepCopy(struct sEntity_Data*);
 struct sEntity_Data* CreatePlayerEntity(struct Float2D, double, unsigned char, char);
-void DestroyEntity(struct sEntity_Data *);
+void DestroyEntity(struct sEntity_Data**);
 
 //Runtime functions
 inline void DoInput(struct sPlayer_Controller* cntrl, SDL_Event* event)

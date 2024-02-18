@@ -70,12 +70,10 @@ struct sWorld_Data* CreateWorldHardcode()
 	while(count < LEVEL_DIM[0] * LEVEL_DIM[1])
 	{
 		wrld_data->LevelData[0].TileData[count].Type = LVL_1_TILE[count];
+		wrld_data->LevelData[0].TileData[count].Location = (struct Int2D){count % LEVEL_DIM[0], count / LEVEL_DIM[0]};
 		if(LVL_1_ENT[count] == 1)
 		{
-			struct Float2D loc;
-			loc.X = count % LEVEL_DIM[0] + 0.5;
-			loc.Y = count / LEVEL_DIM[0] + 0.5;
-			struct sEntity_Data* plyr_data = CreatePlayerEntity(loc, 0, 0, 1);
+			struct sEntity_Data* plyr_data = CreatePlayerEntity((struct Float2D){count % LEVEL_DIM[0] + 0.5, count / LEVEL_DIM[0] + 0.5}, 0, 0, 1);
 			if(plyr_data == NULL)
 				goto BAD_CREATE;
 
@@ -226,8 +224,6 @@ void WorldToFile(struct sWorld_Data* wrld_data, const char* file_path)
 	//Loop through levels and write the levels.
 	while(count < wrld_data->LevelCount)
 	{
-		//printf("Lvl %i\n", count);
-
 		//Get level size and do a null and sanity check.
 		int lvl_size = iToSize(wrld_data->LevelData[count].Size);
 		if(wrld_data->LevelData[count].TileData == NULL || lvl_size <= 0)
@@ -240,36 +236,14 @@ void WorldToFile(struct sWorld_Data* wrld_data, const char* file_path)
 
 		//Write level header.
 		fwrite(&wrld_data->LevelData[count].Size, sizeof(struct Int2D), 1, file_ptr);
-		//printf("Lvl Size: %i, %i\n", wrld_data->LevelData[count].Size.X, wrld_data->LevelData[count].Size.Y);
 		fwrite(&wrld_data->LevelData[count].EntityQueue->Count, sizeof(int), 1, file_ptr);
-		//printf("Num Entities: %i\n", wrld_data->LevelData[count].EntityQueue->Count);
 		fwrite(wrld_data->LevelData[count].TileData, sizeof(struct sTile_Data), lvl_size, file_ptr);
-		//printf("Tile Data:\n");
-		//for(int i = 0; i < wrld_data->LevelData[count].Size.Y; ++i)
-		//{
-		//	for(int e = 0; e < wrld_data->LevelData[count].Size.X; ++e)
-		//	{
-		//		printf(" %i ", wrld_data->LevelData[count].TileData[i * wrld_data->LevelData[count].Size.X + e].Type);
-		//	}
-		//	printf("\n");
-		//}
 
 		//Write the entities one by one and then shunt each off to a temporary queue that lasts the duration of the save operation.
 		struct sEntity_Data* current = DequeueEntity(wrld_data->LevelData[count].EntityQueue);
 		do
 		{
 			fwrite(current, sizeof(struct sEntity_Data), 1, file_ptr);
-	
-			//printf("Entity:\n");
-			//printf(" type: %i\n", current->Type);
-			//printf(" lvl: %i\n", current->Lvl);
-			//printf(" loc: %f, %f\n", current->Location.X, current->Location.Y);
-			//printf(" dir: %f\n", current->Look);
-			//printf(" vel: %f, %f\n", current->Velocity.X, current->Velocity.Y);
-			//printf(" player?: %i\n", current->Controller.IsPlayer);
-			//printf(" Controls: \n");
-			//printf(" w: %i, a: %i, s: %i, d: %i, q: %i, e: %i\n", current->Controller.w_down, current->Controller.a_down, current->Controller.s_down, current->Controller.d_down, current->Controller.q_down, current->Controller.e_down);	
-
 			EnqueueEntity(shunt_yard, current);
 			current = DequeueEntity(wrld_data->LevelData[count].EntityQueue);
 		} while(current != NULL);
@@ -290,30 +264,30 @@ void WorldToFile(struct sWorld_Data* wrld_data, const char* file_path)
 	fclose(file_ptr);
 }
 
-void DestroyWorld(struct sWorld_Data* wrld)
+void DestroyWorld(struct sWorld_Data** wrld_ptr)
 {
-	if(wrld != NULL)
+	if(wrld_ptr != NULL && *wrld_ptr != NULL)
 	{
-		if(wrld->LevelData != NULL)
+		if((*wrld_ptr)->LevelData != NULL)
 		{
-			for(int i = 0; i < wrld->LevelCount; ++i)
+			for(int i = 0; i < (*wrld_ptr)->LevelCount; ++i)
 			{
-				if(wrld->LevelData[i].TileData != NULL)
+				if((*wrld_ptr)->LevelData[i].TileData != NULL)
 				{
-					free(wrld->LevelData[i].TileData);
-					wrld->LevelData[i].TileData = NULL;
+					free((*wrld_ptr)->LevelData[i].TileData);
+					(*wrld_ptr)->LevelData[i].TileData = NULL;
 					
 				}
-				if(wrld->LevelData[i].EntityQueue != NULL)
+				if((*wrld_ptr)->LevelData[i].EntityQueue != NULL)
 				{
-					DestroyEntityQueue(wrld->LevelData[i].EntityQueue);
-					wrld->LevelData[i].EntityQueue = NULL;
+					DestroyEntityQueue(&(*wrld_ptr)->LevelData[i].EntityQueue);
+					(*wrld_ptr)->LevelData[i].EntityQueue = NULL;
 				}
 			}
-			free(wrld->LevelData);
-			wrld->LevelData = NULL;
+			free((*wrld_ptr)->LevelData);
+			(*wrld_ptr)->LevelData = NULL;
 		}
-		free(wrld);
+		free(*wrld_ptr);
 	}
 }
 
@@ -321,4 +295,13 @@ void SetPlayerEntity(struct sWorld_Data* wrld, struct sEntity_Data* plyr_ent)
 {
 	if(wrld != NULL && plyr_ent != NULL)
 		wrld->Player = plyr_ent;
+}
+
+struct sTile_Data* GetTileByInt(struct sLevel_Data* lvl, struct Int2D coords)
+{
+	return &lvl->TileData[coords.Y * lvl->Size.X + coords.X];
+}
+struct sTile_Data* GetTileByFloat(struct sLevel_Data* lvl, struct Float2D coords)
+{
+	return &lvl->TileData[(int)coords.Y * lvl->Size.X + (int)ceil(coords.X)];
 }

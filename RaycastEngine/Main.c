@@ -52,9 +52,15 @@ void draw()
 	struct SDL_Renderer* renderer = GetApplicationRenderer(_app);
 	if(renderer != NULL)
 	{
-		DrawOverheadView(renderer, &_wrld, (struct Int2D){0,0}, (struct Int2D){SCREEN_WIDTH/2, SCREEN_HEIGHT});
-
-		DrawFirstPersonView(renderer, &_wrld, (struct Int2D){SCREEN_WIDTH/2 + 1,0}, (struct Int2D){SCREEN_WIDTH/2, SCREEN_HEIGHT});
+		if(_app->ovrd_hd_active) 
+		{
+			_app->ovrhd.CameraPositionInWrld.X = _wrld->Player->Location.X;
+			_app->ovrhd.CameraPositionInWrld.Y = _wrld->Player->Location.Y;
+			DrawOverheadView(renderer, &_wrld, &_app->ovrhd);
+		}
+		_app->frstprsn.CameraPositionInWrld.X = _wrld->Player->Location.X;
+		_app->frstprsn.CameraPositionInWrld.Y = _wrld->Player->Location.Y;
+		DrawFirstPersonView(renderer, &_wrld, &_app->frstprsn);
 
 		//Show.
 		SDL_RenderPresent(renderer);
@@ -66,8 +72,8 @@ void draw()
 //Garbage collection method for all dynamically allocated memory at close.
 void dispose(void)
 {
-	DestroyApplication(_app);
-	DestroyWorld(_wrld);
+	DestroyApplication(&_app);
+	DestroyWorld(&_wrld);
 }
 
 void setup()
