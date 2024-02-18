@@ -16,7 +16,8 @@ void DrawOverheadView(struct SDL_Renderer* renderer, struct sWorld_Data** wrld_p
 		DrawWorldOverhead(renderer, wrld_ptr, view);
 
 		DrawEntityOverhead(renderer, wrld->Player, view);
-		DrawPlayerViewLine(renderer, wrld->Player, wrld_ptr, view);
+		//DrawPlayerViewLine(renderer, wrld->Player, wrld_ptr, view);
+		DrawPlayerViewFan(renderer, wrld->Player, wrld_ptr, view);
 
 		SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
 		SDL_RenderDrawLine(renderer, view->ViewSize.X - 1, 0, view->ViewSize.X - 1, view->ViewSize.Y - 1);
@@ -40,11 +41,26 @@ void DrawEntityOverhead(struct SDL_Renderer* renderer, struct sEntity_Data* enti
 void DrawPlayerViewLine(struct SDL_Renderer* renderer, struct sEntity_Data* entity, struct sWorld_Data** data, struct sView* view)
 {
 	struct Float2D end, start = {0};
-	end = WorldToViewCoord(CastRay(entity->Look, entity->Location, &(*data)->LevelData[entity->Lvl]), view);
+	end = WorldToViewCoord(CastRay(entity->Look, entity->Location, &(*data)->LevelData[entity->Lvl], NULL), view);
 	start = WorldToViewCoord(entity->Location, view);
 
 	SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
 	SDL_RenderDrawLine(renderer, start.X, start.Y, end.X, end.Y);
+}
+
+void DrawPlayerViewFan(struct SDL_Renderer* renderer, struct sEntity_Data* entity, struct sWorld_Data** data, struct sView* view)
+{
+	struct Float2D end, start = {0};
+	start = WorldToViewCoord(entity->Location, view);
+	SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
+
+	double fan = entity->Look - PLAYER_VIEW;
+	while(fan < entity->Look + PLAYER_VIEW)
+	{
+		end = WorldToViewCoord(CastRay(fan, entity->Location, &(*data)->LevelData[entity->Lvl], NULL), view);
+		SDL_RenderDrawLine(renderer, start.X, start.Y, end.X, end.Y);
+		fan += PLAYER_VIEW_RESOLUTION;
+	}
 }
 
 void DrawWorldOverhead(struct SDL_Renderer* renderer, struct sWorld_Data** wrld_ptr, struct sView* view)
@@ -53,7 +69,7 @@ void DrawWorldOverhead(struct SDL_Renderer* renderer, struct sWorld_Data** wrld_
 	if(wrld != NULL && wrld->Player != NULL && wrld->Player->Lvl < wrld->LevelCount)
 	{
 		//Set up variables.
-		SDL_Rect rect = {0, 0, TILE_WIDTH, TILE_HEIGHT};
+		SDL_Rect rect = {0, 0, TILE_WIDTH_OVERHEAD, TILE_HEIGHT_OVERHEAD};
 		struct Float2D wrld_coord;
 		struct Float2D view_coord;
 		int count_x = 0, count_y = 0;
@@ -89,9 +105,9 @@ void DrawWorldOverhead(struct SDL_Renderer* renderer, struct sWorld_Data** wrld_
 
 struct Float2D WorldToViewCoord(struct Float2D in, struct sView* view)
 {
-	return (struct Float2D){TILE_WIDTH * ( in.X - view->CameraPositionInWrld.X ) + view->ViewSize.X / 2, TILE_HEIGHT * ( in.Y - view->CameraPositionInWrld.Y ) + view->ViewSize.Y / 2};
+	return (struct Float2D){TILE_WIDTH_OVERHEAD * ( in.X - view->CameraPositionInWrld.X ) + view->ViewSize.X / 2, TILE_HEIGHT_OVERHEAD * ( in.Y - view->CameraPositionInWrld.Y ) + view->ViewSize.Y / 2};
 }
 struct Float2D ViewToWorldCoord(struct Float2D in, struct sView* view)
 {
-	return (struct Float2D){( in.X - view->ViewSize.X / 2 ) / TILE_WIDTH + view->CameraPositionInWrld.X, (in.Y - view->ViewSize.Y / 2 ) / TILE_HEIGHT + view->CameraPositionInWrld.Y};
+	return (struct Float2D){( in.X - view->ViewSize.X / 2 ) / TILE_WIDTH_OVERHEAD + view->CameraPositionInWrld.X, (in.Y - view->ViewSize.Y / 2 ) / TILE_HEIGHT_OVERHEAD + view->CameraPositionInWrld.Y};
 }
