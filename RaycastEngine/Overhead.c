@@ -41,7 +41,8 @@ void DrawEntityOverhead(struct SDL_Renderer* renderer, struct sEntity_Data* enti
 void DrawPlayerViewLine(struct SDL_Renderer* renderer, struct sEntity_Data* entity, struct sWorld_Data** data, struct sView* view)
 {
 	struct Float2D end, start = {0};
-	end = WorldToViewCoord(CastRay(entity->Look, entity->Location, &(*data)->LevelData[entity->Lvl], NULL), view);
+	CastRay(entity->Look, entity->Location, &(*data)->LevelData[entity->Lvl], &end, NULL);
+	end = WorldToViewCoord(end, view);
 	start = WorldToViewCoord(entity->Location, view);
 
 	SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
@@ -54,10 +55,11 @@ void DrawPlayerViewFan(struct SDL_Renderer* renderer, struct sEntity_Data* entit
 	start = WorldToViewCoord(entity->Location, view);
 	SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
 
-	double fan = entity->Look - PLAYER_VIEW;
-	while(fan < entity->Look + PLAYER_VIEW)
+	double fan = entity->Look - PLAYER_VIEW_RESOLUTION * 30;
+	for(int r = 0; r < 60; ++r)
 	{
-		end = WorldToViewCoord(CastRay(fan, entity->Location, &(*data)->LevelData[entity->Lvl], NULL), view);
+		CastRay(fan, entity->Location, &(*data)->LevelData[entity->Lvl], &end, NULL);
+		end = WorldToViewCoord(end, view);
 		SDL_RenderDrawLine(renderer, start.X, start.Y, end.X, end.Y);
 		fan += PLAYER_VIEW_RESOLUTION;
 	}

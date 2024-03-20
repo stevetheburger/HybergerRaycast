@@ -31,17 +31,16 @@ void DrawFirstPersonView(struct SDL_Renderer* renderer, struct sWorld_Data** wrl
 		//Do raycast.
 		struct Float2D end = {0};
 
-		double fan = wrld->Player->Look - PLAYER_VIEW;
-		while(fan < wrld->Player->Look + PLAYER_VIEW)
+		double fan = wrld->Player->Look - PLAYER_VIEW_RESOLUTION * 30;
+		for(int r = 0; r < 60; ++r)
 		{
 			char x_or_y = 1;
-			end = CastRay(fan, wrld->Player->Location, &(wrld->LevelData[wrld->Player->Lvl]), &x_or_y);
+			double dist = CastRay(fan, wrld->Player->Location, &(wrld->LevelData[wrld->Player->Lvl]), &end, &x_or_y);
 			if(x_or_y)
 				SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
 			else
 				SDL_SetRenderDrawColor(renderer, 127, 0, 0, SDL_ALPHA_OPAQUE);
 
-			double dist = sqrt(pow(wrld->Player->Location.X - end.X, 2) + pow(wrld->Player->Location.Y - end.Y, 2));
 			double draw_height = dist / VIEW_MAX;
 			double x_view_pos = (fan - (wrld->Player->Look - PLAYER_VIEW)) / (PLAYER_VIEW * 2) * view->ViewSize.X + view->ViewPos.X;
 			SDL_RenderDrawLine(renderer, x_view_pos, view->ViewPos.Y + above_horizon * draw_height / 2, x_view_pos, rect.y + below_horizon * draw_height / 2); 
