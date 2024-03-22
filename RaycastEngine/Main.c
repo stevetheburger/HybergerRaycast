@@ -52,12 +52,14 @@ void draw()
 	struct SDL_Renderer* renderer = GetApplicationRenderer(_app);
 	if(renderer != NULL)
 	{
+
 		if(_app->ovrd_hd_active) 
 		{
 			_app->ovrhd.CameraPositionInWrld.X = _wrld->Player->Location.X;
 			_app->ovrhd.CameraPositionInWrld.Y = _wrld->Player->Location.Y;
 			DrawOverheadView(renderer, &_wrld, &_app->ovrhd);
 		}
+
 		_app->frstprsn.CameraPositionInWrld.X = _wrld->Player->Location.X;
 		_app->frstprsn.CameraPositionInWrld.Y = _wrld->Player->Location.Y;
 		DrawFirstPersonView(renderer, &_wrld, &_app->frstprsn);
@@ -102,6 +104,8 @@ void setup()
 
 	if((_app = CreateApplication(WINDOW_TITLE, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT)) == NULL)
 		exit(EXIT_FAILURE);
+
+	SetOverheadState(_app, 0);
 }
 
 //Entry point for program.

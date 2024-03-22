@@ -3,12 +3,15 @@
 #include <SDL.h>
 #include <stdio.h>
 #include "World.h"
+#include "Entity.h"
 
-//#define VIEW_HEIGHT 256
-#define VIEW_HORIZON 0.45
-#define VIEW_MAX 100
-#define THREE_QUARTER_CIRCLE 3*M_PI/2
-#define QUARTER_CIRCLE M_PI/2
+#define VIEW_MAX 64
+#define FIELD_OF_VIEW 1.57079633
+#define FIELD_OF_VIEW_HALF 0.78539816
+#define VIEW_CAST_INCREMENT 0.00872665
+#define THREE_QUARTER_CIRCLE 4.71238898
+#define QUARTER_CIRCLE 1.57079623
+#define COLUMNS_FACTOR 0.00555556
 
 void DrawFirstPersonView(struct SDL_Renderer*, struct sWorld_Data**, struct sView*);
 
@@ -17,10 +20,11 @@ inline float dist(float ax, float ay, float bx, float by)
 	return ;
 }
 
-inline double CastRay(double angle, struct Float2D source, struct sLevel_Data* lvl, struct Float2D* ray_hit, char* x_or_y)
+inline double CastRay(double angle, struct sEntity_Data* viewer, struct sLevel_Data* lvl, struct Float2D* ray_hit, char* x_or_y)
 {
 	struct Float2D hit_x = {0}, hit_y = {0}, offset = {0};
-	double distX=1024, distY=1024, tangent = tan(angle), cotangent = 1/tangent;
+	struct Float2D source = viewer->Location;
+	double distX=1024, distY=1024, tangent = tan(angle), cotangent = 1/tangent, correction_angle = 0;
 	int count = 0, index;
 
 	if(angle>=FULL_CIRCLE) angle-=FULL_CIRCLE; if(angle<0) angle+=FULL_CIRCLE;
@@ -64,16 +68,17 @@ inline double CastRay(double angle, struct Float2D source, struct sLevel_Data* l
 		else { hit_y.X += offset.X; hit_y.Y += offset.Y; ++count; }
 	}
 
+	correction_angle = viewer->Look - angle; if(correction_angle<0) correction_angle+=FULL_CIRCLE; if(correction_angle>=FULL_CIRCLE) correction_angle-=FULL_CIRCLE;
 	if(distX < distY)
 	{
 		if(x_or_y != NULL) *x_or_y = 1;
 		if(ray_hit != NULL) { ray_hit->X = hit_x.X; ray_hit->Y = hit_x.Y; }
-		return distX;
+		return distX * cos(correction_angle);
 	}
 	else
 	{
 		if(x_or_y != NULL) *x_or_y = 0;
 		if(ray_hit != NULL) { ray_hit->X = hit_y.X; ray_hit->Y = hit_y.Y; }
-		return distY;
+		return distY * cos(correction_angle);
 	}
 }

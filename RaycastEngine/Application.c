@@ -41,8 +41,6 @@ struct sApplication* CreateApplication(const char* window_title, int window_x, i
 	app->ovrhd.ViewSize.X = window_w / 2;
 	app->ovrhd.ViewSize.Y = app->frstprsn.ViewSize.Y = window_h;
 	app->ovrhd.CameraPositionInWrld.X = app->ovrhd.CameraPositionInWrld.Y = app->ovrhd.ViewPos.X = app->ovrhd.ViewPos.Y = app->frstprsn.CameraPositionInWrld.X = app->frstprsn.CameraPositionInWrld.Y = app->frstprsn.ViewPos.X = app->frstprsn.ViewPos.Y = 0;
-	
-	SetOverheadState(app, 1);
 
 	return app;
 }
