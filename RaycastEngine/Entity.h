@@ -173,5 +173,6 @@ inline void DoMove(struct sEntity_Data* ent, double delta)
 		ent->Velocity.Y *= PLAYER_FEET_PER_SEC * delta;
 
 		ent->Location = fAdd(ent->Location, ent->Velocity);
+		ent->Velocity.X = ent->Velocity.Y = 0;
 	}
 }
