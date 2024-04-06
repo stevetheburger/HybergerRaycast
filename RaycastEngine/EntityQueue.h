@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Entity.h"
-
 struct sEntity_Wrapper
 {
 	struct sEntity_Wrapper* Next;

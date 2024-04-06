@@ -1,7 +1,10 @@
-#include <stdio.h>
-#include <SDL.h>
-#include "Overhead.h"
 #include "Application.h"
+
+#include <SDL.h>
+#include <stdio.h>
+
+#include "Overhead.h"
+
 
 //An atomic constructor that returns an application object with the provided title, dimensions, and position.
 struct sApplication* CreateApplication(const char* window_title, int window_x, int window_y, int window_w, int window_h)
@@ -40,9 +43,9 @@ struct sApplication* CreateApplication(const char* window_title, int window_x, i
 
 	app->ovrhd.ViewSize.X = window_w / 2;
 	app->ovrhd.ViewSize.Y = app->frstprsn.ViewSize.Y = window_h;
-	app->ovrhd.CameraPositionInWrld.X = app->ovrhd.CameraPositionInWrld.Y = app->ovrhd.ViewPos.X = app->ovrhd.ViewPos.Y = app->frstprsn.CameraPositionInWrld.X = app->frstprsn.CameraPositionInWrld.Y = app->frstprsn.ViewPos.X = app->frstprsn.ViewPos.Y = 0;
-	
-	SetOverheadState(app, 1);
+
+	app->ovrhd.ViewPos.X = app->ovrhd.ViewPos.Y = app->frstprsn.ViewPos.X = app->frstprsn.ViewPos.Y = 0;
+	app->ovrhd.CameraPositionInWrld.X = app->ovrhd.CameraPositionInWrld.Y = app->frstprsn.CameraPositionInWrld.X = app->frstprsn.CameraPositionInWrld.Y = 0.0;
 
 	return app;
 }

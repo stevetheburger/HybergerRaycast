@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Entity.h"
-#include "EntityQueue.h"
 #include "Int2D.h"
 #include "Float2D.h"
 

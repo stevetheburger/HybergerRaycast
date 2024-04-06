@@ -1,7 +1,11 @@
+#include "World.h"
+
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
+
 #include "Int2D.h"
-#include "World.h"
+#include "EntityQueue.h"
 #include "Entity.h"
 
 #define NUM_LVL 1
@@ -87,7 +91,7 @@ struct sWorld_Data* CreateWorldHardcode()
 
 	BAD_CREATE:
 	if(plyr_data != NULL) free(plyr_data);
-	DestroyWorld(wrld_data);
+	DestroyWorld(&wrld_data);
 	return NULL;
 }
 
@@ -186,7 +190,7 @@ struct sWorld_Data* CreateWorldFromFile(const char *file_path)
 	BAD_CREATE:
 	if(cpy_buffer != NULL) free(cpy_buffer);
 	if(file_ptr != NULL) fclose(file_ptr);
-	if(wrld_data != NULL) DestroyWorld(wrld_data);
+	if(wrld_data != NULL) DestroyWorld(&wrld_data);
 	if(entity_buffer != NULL) free(entity_buffer);
 	return NULL;
 }
@@ -230,7 +234,7 @@ void WorldToFile(struct sWorld_Data* wrld_data, const char* file_path)
 		{
 			fclose(file_ptr);
 			remove(file_path);
-			DestroyEntityQueue(shunt_yard);
+			DestroyEntityQueue(&shunt_yard);
 			return;
 		}	
 

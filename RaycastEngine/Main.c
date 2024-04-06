@@ -1,12 +1,14 @@
-#include <stdio.h>
 #include <SDL.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+
 #include "Application.h"
 #include "World.h"
 #include "Entity.h"
 #include "Overhead.h"
 #include "Viewport.h"
+#include "Camera.h"
 
 //Window & hardware constants.
 #define WRLD_FILE ".\\test"
@@ -45,6 +47,8 @@ void update(double delta)
 {
 	//Move player.
 	DoMove(_wrld->Player, delta);
+
+	CalcVision(_wrld->Player->Camera, &_wrld->LevelData[_wrld->Player->Lvl]);
 }
 
 void draw()
@@ -56,11 +60,11 @@ void draw()
 		{
 			_app->ovrhd.CameraPositionInWrld.X = _wrld->Player->Location.X;
 			_app->ovrhd.CameraPositionInWrld.Y = _wrld->Player->Location.Y;
-			DrawOverheadView(renderer, &_wrld, &_app->ovrhd);
+			DrawOverheadView(renderer, _wrld->Player, _wrld->Player->Camera, &_wrld->LevelData[_wrld->Player->Lvl], &_app->ovrhd);
 		}
 		_app->frstprsn.CameraPositionInWrld.X = _wrld->Player->Location.X;
 		_app->frstprsn.CameraPositionInWrld.Y = _wrld->Player->Location.Y;
-		DrawFirstPersonView(renderer, &_wrld, &_app->frstprsn);
+		DrawFirstPersonView(renderer, _wrld->Player->Camera, &_app->frstprsn);
 
 		//Show.
 		SDL_RenderPresent(renderer);
@@ -102,6 +106,10 @@ void setup()
 
 	if((_app = CreateApplication(WINDOW_TITLE, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT)) == NULL)
 		exit(EXIT_FAILURE);
+
+	SetCamera(_wrld->Player, CreateCamera(M_PI/2, 64, _wrld->Player->Location, _wrld->Player->Look));
+
+	SetOverheadState(_app, 1);
 }
 
 //Entry point for program.

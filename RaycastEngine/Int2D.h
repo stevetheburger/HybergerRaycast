@@ -15,5 +15,5 @@ char iNotEqual(struct Int2D, struct Int2D);
 char iGreaterThanOrEqual(struct Int2D, struct Int2D);
 char iLessThanOrEqual(struct Int2D, struct Int2D);
 struct Int2D IntZero();
-int iToIndex(struct Int2D pos, struct Int2D dim);
-int iToSize(struct Int2D dim);
+unsigned int iToIndex(struct Int2D pos, struct Int2D dim);
+unsigned int iToSize(struct Int2D dim);

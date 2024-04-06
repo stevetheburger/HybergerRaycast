@@ -1,27 +1,28 @@
+#include "Overhead.h"
+
 #include <SDL.h>
 #include <stdlib.h>
-#include "Overhead.h"
+
+#include "Application.h"
+#include "World.h"
 #include "Viewport.h"
 #include "Entity.h"
+#include "Camera.h"
 
-void DrawOverheadView(struct SDL_Renderer* renderer, struct sWorld_Data** wrld_ptr, struct sView* view)
+void DrawOverheadView(struct SDL_Renderer* renderer, struct sEntity_Data* plyr, struct sCamera* cam, struct sLevel_Data* lvl, struct sView* view)
 {
-	struct sWorld_Data* wrld = *wrld_ptr;
-	if(wrld != NULL && wrld->Player != NULL && wrld->Player->Lvl < wrld->LevelCount)
-	{
-		//Draw background
-		SDL_SetRenderDrawColor(renderer, 0, 0, 127, SDL_ALPHA_OPAQUE);
-		SDL_RenderClear(renderer);
+	//Draw background
+	SDL_SetRenderDrawColor(renderer, 0, 0, 127, SDL_ALPHA_OPAQUE);
+	SDL_RenderClear(renderer);
 
-		DrawWorldOverhead(renderer, wrld_ptr, view);
+	DrawWorldOverhead(renderer, lvl, view);
 
-		DrawEntityOverhead(renderer, wrld->Player, view);
-		//DrawPlayerViewLine(renderer, wrld->Player, wrld_ptr, view);
-		DrawPlayerViewFan(renderer, wrld->Player, wrld_ptr, view);
+	DrawEntityOverhead(renderer, plyr, view);
+	//DrawPlayerViewLine(renderer, wrld->Player, wrld_ptr, view);
+	DrawPlayerViewFan(renderer, cam, view);
 
-		SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
-		SDL_RenderDrawLine(renderer, view->ViewSize.X - 1, 0, view->ViewSize.X - 1, view->ViewSize.Y - 1);
-	}
+	SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
+	SDL_RenderDrawLine(renderer, view->ViewSize.X - 1, 0, view->ViewSize.X - 1, view->ViewSize.Y - 1);
 }
 
 void DrawEntityOverhead(struct SDL_Renderer* renderer, struct sEntity_Data* entity, struct sView* view)
@@ -33,50 +34,58 @@ void DrawEntityOverhead(struct SDL_Renderer* renderer, struct sEntity_Data* enti
 			SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
 		else
 			SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
-		struct Float2D position = fSub(WorldToViewCoord((entity->Location), view), (struct Float2D){PLAYER_WIDTH / 2, PLAYER_WIDTH / 2});
-		SDL_RenderFillRect(renderer, &(struct SDL_Rect){position.X , position.Y , PLAYER_WIDTH, PLAYER_WIDTH});
+		struct Float2D position = fSub(WorldToViewCoord(entity->Location, view), (struct Float2D){PLAYER_WIDTH / 2, PLAYER_WIDTH / 2});
+		SDL_RenderFillRect(renderer, &(struct SDL_Rect){(int)position.X, (int)position.Y , PLAYER_WIDTH, PLAYER_WIDTH});
 	}
 }
 
-void DrawPlayerViewLine(struct SDL_Renderer* renderer, struct sEntity_Data* entity, struct sWorld_Data** data, struct sView* view)
+void DrawPlayerViewLine(struct SDL_Renderer* renderer, struct sCamera* cam, struct sView* view)
 {
 	struct Float2D end, start = {0};
-	CastRay(entity->Look, entity->Location, &(*data)->LevelData[entity->Lvl], &end, NULL);
-	end = WorldToViewCoord(end, view);
-	start = WorldToViewCoord(entity->Location, view);
-
+	end = WorldToViewCoord(cam->Hits[cam->NumRays/2], view);
+	start = WorldToViewCoord(cam->Location, view);
+	
 	SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
-	SDL_RenderDrawLine(renderer, start.X, start.Y, end.X, end.Y);
+	SDL_RenderDrawLine(renderer, (int)start.X, (int)start.Y, (int)end.X, (int)end.Y);
 }
 
-void DrawPlayerViewFan(struct SDL_Renderer* renderer, struct sEntity_Data* entity, struct sWorld_Data** data, struct sView* view)
+void DrawPlayerViewFan(struct SDL_Renderer* renderer, struct sCamera* cam, struct sView* view)
 {
 	struct Float2D end, start = {0};
-	start = WorldToViewCoord(entity->Location, view);
+	start = WorldToViewCoord(cam->Location, view);
 	SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
 
-	double fan = entity->Look - PLAYER_VIEW_RESOLUTION * 30;
-	for(int r = 0; r < 60; ++r)
+	//double fan_start = entity->Look - FIELD_OF_VIEW/2, fan_running = 0;
+	//while(fan_running < FIELD_OF_VIEW)
+	//{
+	//	CastRay(fan_start + fan_running, entity->Location, &(*data)->LevelData[entity->Lvl], &end, NULL);
+	//	end = WorldToViewCoord(end, view);
+	//	SDL_RenderDrawLine(renderer, (int)start.X, (int)start.Y, (int)end.X, (int)end.Y);
+	//	fan_running += VIEW_CAST_INCREMENT;
+	//}
+
+	unsigned int count = 0;
+	while(count < cam->NumRays)
 	{
-		CastRay(fan, entity->Location, &(*data)->LevelData[entity->Lvl], &end, NULL);
-		end = WorldToViewCoord(end, view);
-		SDL_RenderDrawLine(renderer, start.X, start.Y, end.X, end.Y);
-		fan += PLAYER_VIEW_RESOLUTION;
+		end = WorldToViewCoord(cam->Hits[count], view);
+		SDL_RenderDrawLine(renderer, (int)start.X, (int)start.Y, (int)end.X, (int)end.Y);
+
+		++count;
 	}
 }
 
-void DrawWorldOverhead(struct SDL_Renderer* renderer, struct sWorld_Data** wrld_ptr, struct sView* view)
+void DrawWorldOverhead(struct SDL_Renderer* renderer, struct sLevel_Data* lvl, struct sView* view)
 {
-	struct sWorld_Data* wrld = *wrld_ptr;
-	if(wrld != NULL && wrld->Player != NULL && wrld->Player->Lvl < wrld->LevelCount)
-	{
+	//struct sWorld_Data* wrld = *wrld_ptr;
+	//if(wrld != NULL && wrld->Player != NULL && wrld->Player->Lvl < wrld->LevelCount)
+	//{
 		//Set up variables.
 		SDL_Rect rect = {0, 0, TILE_WIDTH_OVERHEAD, TILE_HEIGHT_OVERHEAD};
 		struct Float2D wrld_coord;
 		struct Float2D view_coord;
 		int count_x = 0, count_y = 0;
 
-		struct sLevel_Data* lvl = &wrld->LevelData[wrld->Player->Lvl];
+		//struct sLevel_Data* lvl = &wrld->LevelData[wrld->Player->Lvl];
 
 		while(count_y < lvl->Size.Y)
 		{
@@ -93,16 +102,17 @@ void DrawWorldOverhead(struct SDL_Renderer* renderer, struct sWorld_Data** wrld_
 				else
 					SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
 
-				rect.x = view_coord.X;
-				rect.y = view_coord.Y;
+				rect.x = (int)view_coord.X;
+				rect.y = (int)view_coord.Y;
 				SDL_RenderFillRect(renderer, &rect);
 
 				++count_x;
 			}
-			count_x = wrld_coord.X = 0;
+			count_x = 0;
+			wrld_coord.X = 0.0;
 			++count_y;
 		}
-	}
+	//}
 }
 
 struct Float2D WorldToViewCoord(struct Float2D in, struct sView* view)

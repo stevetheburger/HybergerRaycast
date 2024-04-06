@@ -1,5 +1,8 @@
-#include <stdlib.h>
 #include "EntityQueue.h"
+
+#include <stdlib.h>
+
+#include "Entity.h"
 
 struct sEntity_Queue* CreateEntityQueue()
 {
