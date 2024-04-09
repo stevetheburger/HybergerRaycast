@@ -107,7 +107,7 @@ void setup()
 	if((_app = CreateApplication(WINDOW_TITLE, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT)) == NULL)
 		exit(EXIT_FAILURE);
 
-	SetCamera(_wrld->Player, CreateCamera(M_PI/2, 64, _wrld->Player->Location, _wrld->Player->Look));
+	SetCamera(_wrld->Player, CreateCamera(FIELD_OF_VIEW, NUM_RAYS, _wrld->Player->Location, _wrld->Player->Look));
 
 	SetOverheadState(_app, 0);
 }

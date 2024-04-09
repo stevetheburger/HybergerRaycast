@@ -3,9 +3,10 @@
 #include "Float2D.h"
 
 #define VIEW_MAX 64
+#define NUM_RAYS 256
 #define FIELD_OF_VIEW 1.57079633
-#define FIELD_OF_VIEW_HALF 0.78539816
-#define VIEW_CAST_INCREMENT 0.00872665
+//#define FIELD_OF_VIEW_HALF 0.78539816
+//#define VIEW_CAST_INCREMENT 0.00872665
 
 struct sCamera
 {

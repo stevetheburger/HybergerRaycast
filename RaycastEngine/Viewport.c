@@ -23,9 +23,9 @@ void DrawFirstPersonView(struct SDL_Renderer* renderer, struct sCamera* cam, str
 	rect.w = view->ViewSize.X;
 	rect.h = view->ViewSize.Y;
 
-	SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
 	SDL_RenderFillRect(renderer, &rect);
-	SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
+	SDL_SetRenderDrawColor(renderer, 60, 60, 60, SDL_ALPHA_OPAQUE);
 
 	////Do raycast.
 	double draw_height = 0.0, x_draw_size = 0.0, remainder_left = 0.0, remainder_right = 0.0, correction_angle = 0.0;
