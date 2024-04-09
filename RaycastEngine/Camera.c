@@ -63,10 +63,10 @@ void DestroyCamera(struct sCamera** cam)
 	}
 }
 
-double CastRay(double angle, struct Float2D origin, struct sLevel_Data* lvl, struct Float2D* ray_hit, char* x_or_y)
+double CastRay(double ray_angle, double look_angle, struct Float2D origin, struct sLevel_Data* lvl, struct Float2D* ray_hit, char* x_or_y)
 {
 	struct Float2D hit_x = {0}, hit_y = {0}, offset = {0};
-	double distX=1024, distY=1024, tangent = tan(angle), cotangent = 1/tangent, correction_angle = 0;
+	double angle = ray_angle + look_angle, distX=1024, distY=1024, tangent = tan(angle), cotangent = 1/tangent, correction_angle = 0;
 	int count = 0, index;
 
 	if(angle>=FULL_CIRCLE) angle-=FULL_CIRCLE; if(angle<0) angle+=FULL_CIRCLE;
@@ -114,13 +114,13 @@ double CastRay(double angle, struct Float2D origin, struct sLevel_Data* lvl, str
 	{
 		if(x_or_y != NULL) *x_or_y = 1;
 		if(ray_hit != NULL) { ray_hit->X = hit_x.X; ray_hit->Y = hit_x.Y; }
-		return distX * cos(angle);
+		return distX * cos(ray_angle);
 	}
 	else
 	{
 		if(x_or_y != NULL) *x_or_y = 0;
 		if(ray_hit != NULL) { ray_hit->X = hit_y.X; ray_hit->Y = hit_y.Y; }
-		return distY * cos(angle);
+		return distY * cos(ray_angle);
 	}
 }
 
@@ -138,11 +138,11 @@ void CalcVision(struct sCamera* cam, struct sLevel_Data* lvl)
 
 	while(ray_count < cam->NumRays)
 	{
-		cam->Distances[ray_count] = CastRay(cam->Look - cam->Angles[angle_count], cam->Location, lvl, &ray_hit, NULL);
+		cam->Distances[ray_count] = CastRay(-cam->Angles[angle_count], cam->Look, cam->Location, lvl, &ray_hit, NULL);
 		cam->Hits[ray_count].X = ray_hit.X;
 		cam->Hits[ray_count].Y = ray_hit.Y;
 		++ray_count;
-		cam->Distances[ray_count] = CastRay(cam->Look + cam->Angles[angle_count], cam->Location, lvl, &ray_hit, NULL);
+		cam->Distances[ray_count] = CastRay(cam->Angles[angle_count], cam->Look, cam->Location, lvl, &ray_hit, NULL);
 		cam->Hits[ray_count].X = ray_hit.X;
 		cam->Hits[ray_count].Y = ray_hit.Y;
 		++ray_count;

@@ -109,7 +109,7 @@ void setup()
 
 	SetCamera(_wrld->Player, CreateCamera(M_PI/2, 64, _wrld->Player->Location, _wrld->Player->Look));
 
-	SetOverheadState(_app, 1);
+	SetOverheadState(_app, 0);
 }
 
 //Entry point for program.

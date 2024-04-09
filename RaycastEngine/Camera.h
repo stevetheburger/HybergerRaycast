@@ -21,5 +21,5 @@ struct sCamera
 struct sCamera* CreateCamera(double, unsigned int, struct Float2D, double);
 void DestroyCamera(struct sCamera**); 
 
-double CastRay(double, struct Float2D, struct sLevel_Data*, struct Float2D*, char*);
+double CastRay(double, double, struct Float2D, struct sLevel_Data*, struct Float2D*, char*);
 void CalcVision(struct sCamera*, struct sLevel_Data*);
