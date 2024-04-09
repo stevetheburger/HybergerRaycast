@@ -4,6 +4,7 @@
 
 #include "Entity.h"
 
+//Creates a queue for entities present in a level.
 struct sEntity_Queue* CreateEntityQueue()
 {
 	struct sEntity_Queue* ret_val = malloc(sizeof(struct sEntity_Queue));
@@ -15,6 +16,7 @@ struct sEntity_Queue* CreateEntityQueue()
 
 	return ret_val;
 }
+//Destroys a queue for entities present in the level at teardown.
 void DestroyEntityQueue(struct sEntity_Queue** queue_ptr)
 {
 	if(queue_ptr != NULL && *queue_ptr != NULL)
@@ -30,6 +32,7 @@ void DestroyEntityQueue(struct sEntity_Queue** queue_ptr)
 	}
 }
 
+//Pushes new entity onto queue at the back.
 void EnqueueEntity(struct sEntity_Queue* queue, struct sEntity_Data* ent)
 {
 	if(queue != NULL && ent != NULL)
@@ -53,6 +56,7 @@ void EnqueueEntity(struct sEntity_Queue* queue, struct sEntity_Data* ent)
 		++queue->Count;
 	}
 }
+//Removes entity from the queue at the front.
 struct sEntity_Data* DequeueEntity(struct sEntity_Queue* queue)
 {
 	struct sEntity_Data* ret_val = NULL;

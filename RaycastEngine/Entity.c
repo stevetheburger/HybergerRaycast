@@ -7,6 +7,7 @@
 #include "TrigConstants.h"
 #include "Camera.h"
 
+//Creates empty, default entity.
 struct sEntity_Data* CreateDefaultEntity()
 {
 	struct sEntity_Data* ret_val = malloc(sizeof(struct sEntity_Data));
@@ -25,6 +26,7 @@ struct sEntity_Data* CreateDefaultEntity()
 	return ret_val;
 }
 
+//Creates entity of specified type, at the specified location and angle in the specified level.
 struct sEntity_Data* CreateEntity(struct Float2D loc, double dir, unsigned char lvl, unsigned char type, char is_player)
 {
 	struct sEntity_Data* ret_val = malloc(sizeof(struct sEntity_Data));
@@ -51,17 +53,19 @@ struct sEntity_Data* CreateEntity(struct Float2D loc, double dir, unsigned char 
 	return ret_val;
 }
 
+//Feeds into the function above with it specified as the player.
 struct sEntity_Data* CreatePlayerEntity(struct Float2D loc, double dir, unsigned char lvl, char is_player)
 {
 	return CreateEntity(loc, dir, lvl, 1, is_player);
 }
-
+//Destroys entity at teardown.
 void DestroyEntity(struct sEntity_Data** ent_ptr)
 {
 	if(ent_ptr != NULL && *ent_ptr != NULL)
 		free(*ent_ptr);
 }
 
+//Makes a deep copy (clone) of a entity object. Does not point to the same object, but instead a new one.
 struct sEntity_Data* EntityDeepCopy(struct sEntity_Data* original)
 {	
 	struct sEntity_Data* ret_val = NULL;
@@ -84,7 +88,7 @@ struct sEntity_Data* EntityDeepCopy(struct sEntity_Data* original)
 	return ret_val;
 }
 
-//Runtime functions
+//Runtime functions. Does input handling.
 void DoInput(struct sPlayer_Controller* cntrl, SDL_Event* event)
 {
 	if(cntrl->IsPlayer)
@@ -160,30 +164,39 @@ void DoInput(struct sPlayer_Controller* cntrl, SDL_Event* event)
 	}
 }
 
+//Does update of position and look angle.
 void DoMove(struct sEntity_Data* ent, double delta)
 {
 	static struct Float2D Direction;
 
+	//Handle look counter clockwise
 	if(ent->Controller.Keys & Q_KEY)
 	{
+		//Apply rate and processor time.
 		ent->Look -= PLAYER_TURN_RATE_PER_SEC * delta;
+		//Ensure the angle is normalized.
 		if(ent->Look >= FULL_CIRCLE)
 			ent->Look -= FULL_CIRCLE;
 		else if(ent->Look < 0)
 			ent->Look += FULL_CIRCLE;
 	}
+	//Handle look clockwise
 	if(ent->Controller.Keys & E_KEY)
 	{
+		//Apply rate and processor time.
 		ent->Look += PLAYER_TURN_RATE_PER_SEC * delta;
+		//Ensure the angle is normalized.
 		if(ent->Look >= FULL_CIRCLE)
 			ent->Look -= FULL_CIRCLE;
 		else if(ent->Look < 0)
 			ent->Look += FULL_CIRCLE;
 	}
 
+	//Set the intermediate direction variable based on the look angle.
 	Direction.X = cos(ent->Look);
 	Direction.Y = sin(ent->Look);
 
+	//Handle movement.
 	//Calculate velocity from key state.
 	if(ent->Controller.Keys & W_KEY)
 	{
@@ -206,7 +219,7 @@ void DoMove(struct sEntity_Data* ent, double delta)
 		ent->Velocity.Y += -Direction.X;
 	}
 
-	//Normalize and apply.
+	//Normalize movement vectors and apply.
 	if(ent->Velocity.X != 0 || ent->Velocity.Y != 0) 
 	{	
 		double magnitude = sqrt((ent->Velocity.X) * (ent->Velocity.X) + (ent->Velocity.Y) * (ent->Velocity.Y));
@@ -219,6 +232,7 @@ void DoMove(struct sEntity_Data* ent, double delta)
 		ent->Velocity.X = ent->Velocity.Y = 0;
 	}
 
+	//If camera is present, move camera with the entity.
 	if(ent->Camera != NULL)
 	{
 		ent->Camera->Location.X = ent->Location.X;
@@ -227,6 +241,7 @@ void DoMove(struct sEntity_Data* ent, double delta)
 	}
 }
 
+//Set a camera to move with the entity.
 void SetCamera(struct sEntity_Data* data, struct sCamera* cam)
 {
 	if(data != NULL)

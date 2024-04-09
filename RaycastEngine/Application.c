@@ -5,7 +5,6 @@
 
 #include "Overhead.h"
 
-
 //An atomic constructor that returns an application object with the provided title, dimensions, and position.
 struct sApplication* CreateApplication(const char* window_title, int window_x, int window_y, int window_w, int window_h)
 {
@@ -62,9 +61,11 @@ void DestroyApplication(struct sApplication** app_ptr)
 	}
 }
 
+//Getters for SDL objects.
 struct SDL_Renderer* GetApplicationRenderer(struct sApplication* app) { return app != NULL ? app->render : NULL; }
 struct SDL_Window* GetApplicationWindow(struct sApplication* app) { return app != NULL ? app->window : NULL; }
 
+//Thread safe getter for the application run state.
 char GetRunState(struct sApplication* app)
 {
 	char value = -1;
@@ -78,7 +79,7 @@ char GetRunState(struct sApplication* app)
 
 	return value;
 }
-
+//Thread safe setter for the application run state.
 void SetRunState(struct sApplication* app, char value)
 {
 	if(app == NULL || app->run_mtx == NULL)
@@ -89,27 +90,29 @@ void SetRunState(struct sApplication* app, char value)
 	SDL_UnlockMutex(app->run_mtx);
 }
 
+//Getter for the overhead display on/off state.
 char GetOverheadState(struct sApplication* app)
 {
 	return app->ovrd_hd_active;
 }
+//Setter for the overhead display on/off state.
 void SetOverheadState(struct sApplication* app, char new_state)
 {
 	if(new_state == 1)
 	{
+		//If overhead on, move and scale first person view over to display debug overhead on the left.
 		app->frstprsn.ViewPos.X = app->window_size.X / 2;
 		app->frstprsn.ViewSize.X = app->window_size.X / 2;
 	}
 	else if(new_state == 0)
 	{
+		//If overhead off, have first person view take up the entire view.
 		app->frstprsn.ViewPos.X = 0;
 		app->frstprsn.ViewSize.X = app->window_size.X;
 	}
 }
-void SetOverheadCamera(struct sApplication* app, struct Float2D new_camera)
-{
-	app->ovrhd.CameraPositionInWrld = (struct Float2D){new_camera.X, new_camera.Y};
-}
+
+//Setters for the dimensions of the overhead view for the application.
 void SetOverheadSize(struct sApplication* app, struct Int2D new_size)
 {
 	app->ovrhd.ViewSize = (struct Int2D){new_size.X, new_size.Y};

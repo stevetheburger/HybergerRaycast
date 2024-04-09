@@ -3,6 +3,7 @@
 #include "Int2D.h"
 #include "Float2D.h"
 
+//Structure that contains viewport dimensions.
 struct sView 
 {
 	struct Int2D ViewPos;
@@ -19,8 +20,8 @@ struct sApplication
 	struct SDL_Renderer* render;
 	struct SDL_Window* window;
 	struct Int2D window_size;
-	struct sView ovrhd;
-	struct sView frstprsn;
+	struct sView ovrhd; //Top down view for debug.
+	struct sView frstprsn; //First person view.
 };
 
 //Create and cleanup methods to handle the initialization and memory of the application structure.
@@ -36,8 +37,10 @@ struct SDL_Window* GetApplicationWindow(struct sApplication*);
 char GetRunState(struct sApplication* app);
 void SetRunState(struct sApplication* app, char);
 
+//Getter and setter for whether or not the overhead view is displayed.
 char GetOverheadState(struct sApplication* app);
 void SetOverheadState(struct sApplication* app, char);
-void SetOverheadCamera(struct sApplication* app, struct Float2D);
+
+//Setters for the dimensions of the overhead display for the application.
 void SetOverheadSize(struct sApplication* app, struct Int2D);
 void SetOverheadPos(struct sApplication* app, struct Int2D);

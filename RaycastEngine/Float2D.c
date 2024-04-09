@@ -1,5 +1,6 @@
 #include "Float2D.h"
 
+//Arithmetic functions.
 struct Float2D fAdd(struct Float2D l, struct Float2D r)
 {
 	struct Float2D sum;
@@ -22,11 +23,11 @@ struct Float2D fMult(struct Float2D l, struct Float2D r)
 	return prod;
 }
 
+//Comparative functions.
 char fGreaterThan(struct Float2D l, struct Float2D r)
 {
     return l.Y > r.Y || l.Y == r.Y && l.X > r.X;
 }
-
 char fLessThan(struct Float2D l, struct Float2D r)
 {
     return l.Y < r.Y || l.Y == r.Y && l.X < r.X;
@@ -48,6 +49,7 @@ char fLessThanOrEqual(struct Float2D l, struct Float2D r)
     return l.Y < r.Y || l.Y == r.Y && l.X <= r.X;
 }
 
+//Vertex at (0,0)
 struct Float2D FloatZero()
 {
 	struct Float2D zero;

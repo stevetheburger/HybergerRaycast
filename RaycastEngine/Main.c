@@ -18,8 +18,6 @@
 
 struct sApplication* _app;
 struct sWorld_Data* _wrld;
-//struct sEntity_Data* _plyr_ent;
-//struct sPlayer_Controller* _cntrl;
 
 //Function to call in order to terminate program normally.
 void stop()
@@ -47,7 +45,7 @@ void update(double delta)
 {
 	//Move player.
 	DoMove(_wrld->Player, delta);
-
+	//Give the player sight.
 	CalcVision(_wrld->Player->Camera, &_wrld->LevelData[_wrld->Player->Lvl]);
 }
 
@@ -56,12 +54,15 @@ void draw()
 	struct SDL_Renderer* renderer = GetApplicationRenderer(_app);
 	if(renderer != NULL)
 	{
+		//Check if overhead is active or not.
 		if(_app->ovrd_hd_active) 
 		{
+			//If active draw overhead view on the left.
 			_app->ovrhd.CameraPositionInWrld.X = _wrld->Player->Location.X;
 			_app->ovrhd.CameraPositionInWrld.Y = _wrld->Player->Location.Y;
 			DrawOverheadView(renderer, _wrld->Player, _wrld->Player->Camera, &_wrld->LevelData[_wrld->Player->Lvl], &_app->ovrhd);
 		}
+		//Draw first person view.
 		_app->frstprsn.CameraPositionInWrld.X = _wrld->Player->Location.X;
 		_app->frstprsn.CameraPositionInWrld.Y = _wrld->Player->Location.Y;
 		DrawFirstPersonView(renderer, _wrld->Player->Camera, &_app->frstprsn);
@@ -90,6 +91,7 @@ void setup()
 	if(SDL_Init(SDL_INIT_VIDEO) != 0)
 		exit(EXIT_FAILURE);
 	
+	//Load world or write a hardcoded one if the file was deleted.
 	_wrld = CreateWorldFromFile(WRLD_FILE);
 	if(_wrld == NULL)
 	{
@@ -98,17 +100,14 @@ void setup()
 		WorldToFile(_wrld, WRLD_FILE);
 	}
 
-	//_plyr_ent = _wrld->Player;
-	//if(_plyr_ent == NULL)
-	//	exit(EXIT_FAILURE);
-	//if(_plyr_ent->Lvl >= _wrld->LevelCount)
-	//	exit(EXIT_FAILURE);
-
+	//Create application object.
 	if((_app = CreateApplication(WINDOW_TITLE, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT)) == NULL)
 		exit(EXIT_FAILURE);
 
+	//Set the camera for the player entity.
 	SetCamera(_wrld->Player, CreateCamera(FIELD_OF_VIEW, NUM_RAYS, _wrld->Player->Location, _wrld->Player->Look));
 
+	//Set overhead state to 0 (not debugging).
 	SetOverheadState(_app, 0);
 }
 
@@ -118,6 +117,7 @@ int main(int argc, char* argv[])
 	//Do setup.
 	setup();
 
+	//Get current time.
 	clock_t last, current;
 	current = 0;
 	last = clock();
@@ -125,12 +125,14 @@ int main(int argc, char* argv[])
 	//Game loop. Run as long as run_state is 1;
 	while(_app->run_state)
 	{
+		//Processor time.
 		current = clock();	
 
 		input();
 		update(((double)current - last)/CLOCKS_PER_SEC);
 		draw();
 
+		//Swap over processor time.
 		last = current;
 	}
 

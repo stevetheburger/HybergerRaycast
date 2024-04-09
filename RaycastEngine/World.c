@@ -8,6 +8,7 @@
 #include "EntityQueue.h"
 #include "Entity.h"
 
+//Hard coded world.
 #define NUM_LVL 1
 #define LEVEL_DIM (unsigned int[]){16, 16}
 #define LVL_1_TILE (unsigned char[]){\
@@ -28,6 +29,7 @@
 1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,\
 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
 
+//Entity map.
 #define LVL_1_ENT (unsigned char[]){\
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,\
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,\
@@ -46,23 +48,24 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,\
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
 
+//Create the hardcoded world above.
 struct sWorld_Data* CreateWorldHardcode()
 {
 	struct sEntity_Data* plyr_data = NULL;
-
+	
+	//Create world structure.
 	struct sWorld_Data* wrld_data = malloc(sizeof(struct sWorld_Data));
 	if(wrld_data == NULL)
 		return NULL;
 
+	//Create level structure.
 	wrld_data->LevelData = malloc(sizeof(struct sLevel_Data) * NUM_LVL);
 	if(wrld_data->LevelData == NULL)
 		goto BAD_CREATE;
-	
 	wrld_data->LevelCount = NUM_LVL;
 	wrld_data->LevelData[0].TileData = malloc(sizeof(struct sTile_Data) * LEVEL_DIM[0] * LEVEL_DIM[1]);
 	if(wrld_data->LevelData[0].TileData == NULL)
 		goto BAD_CREATE;
-
 	wrld_data->LevelData[0].EntityQueue = CreateEntityQueue();
 	if(wrld_data->LevelData[0].EntityQueue == NULL)
 		goto BAD_CREATE;
@@ -71,16 +74,21 @@ struct sWorld_Data* CreateWorldHardcode()
 	wrld_data->LevelData[0].Size.Y = LEVEL_DIM[1];
 	unsigned int count = 0;
 	char player_set = 0;
+	
+	//Loop through level.
 	while(count < LEVEL_DIM[0] * LEVEL_DIM[1])
 	{
+		//Initialize tiles.
 		wrld_data->LevelData[0].TileData[count].Type = LVL_1_TILE[count];
 		wrld_data->LevelData[0].TileData[count].Location = (struct Int2D){count % LEVEL_DIM[0], count / LEVEL_DIM[0]};
+		//Found player, create player.
 		if(LVL_1_ENT[count] == 1)
 		{
 			struct sEntity_Data* plyr_data = CreatePlayerEntity((struct Float2D){count % LEVEL_DIM[0] + 0.5, count / LEVEL_DIM[0] + 0.5}, 0, 0, 1);
 			if(plyr_data == NULL)
 				goto BAD_CREATE;
 
+			//Add player to entity queue for level
 			EnqueueEntity(wrld_data->LevelData[0].EntityQueue, plyr_data);
 			wrld_data->Player = plyr_data;
 		}
@@ -89,6 +97,7 @@ struct sWorld_Data* CreateWorldHardcode()
 
 	return wrld_data;
 
+	//In case the allocation doesn't work properly.
 	BAD_CREATE:
 	if(plyr_data != NULL) free(plyr_data);
 	DestroyWorld(&wrld_data);
@@ -128,58 +137,56 @@ struct sWorld_Data* CreateWorldFromFile(const char *file_path)
 	if(wrld_data->LevelData == NULL)
 		goto BAD_CREATE;
 	
+	//Create entity buffer from which to read entity data from the file.
 	entity_buffer = CreateDefaultEntity();
 	if(entity_buffer == NULL)
 		goto BAD_CREATE;
 
+	//Loop through the levels.
 	unsigned char count = 0;
 	while(count < wrld_data->LevelCount)
 	{
+		//Read and create the level data.
 		if(fread(cpy_buffer, sizeof(struct Int2D), 1, file_ptr) != 1)
 			goto BAD_CREATE;
-
 		wrld_data->LevelData[count].Size = *(struct Int2D *)cpy_buffer;
 		wrld_data->LevelData[count].TileData = malloc(sizeof(struct sTile_Data) * iToSize(wrld_data->LevelData[count].Size));
 		if(wrld_data->LevelData[count].TileData == NULL)
 			goto BAD_CREATE;
-
 		wrld_data->LevelData[count].EntityQueue = CreateEntityQueue();
 		if(wrld_data->LevelData[count].EntityQueue == NULL)
 			goto BAD_CREATE;
 
+		//Check if there is entities present.
 		if(fread(cpy_buffer, sizeof(int), 1, file_ptr) != 1)
 			goto BAD_CREATE;
-
+		//Get tile data.
 		if(fread(wrld_data->LevelData[count].TileData, sizeof(struct sTile_Data), iToSize(wrld_data->LevelData[count].Size), file_ptr) != iToSize(wrld_data->LevelData[count].Size))
 			goto BAD_CREATE;
 
+		//Loop through entites if present.
 		for(int i = 0; i < *(int *)cpy_buffer; ++i)
 		{
+			//Read entity data.
 			if(entity_buffer == NULL)
-			{
-				free(entity_buffer);
 				goto BAD_CREATE;
-			}
-
 			if(fread(entity_buffer, sizeof(struct sEntity_Data), 1, file_ptr) != 1)
 				goto BAD_CREATE;
 			
-
-
+			//If entity is player, add player to world.
 			if(entity_buffer->Controller.IsPlayer) 
 			{	
 				wrld_data->Player = EntityDeepCopy(entity_buffer);
 				EnqueueEntity(wrld_data->LevelData[count].EntityQueue, wrld_data->Player);
 			}
 			else
-			{
 				EnqueueEntity(wrld_data->LevelData[count].EntityQueue, EntityDeepCopy(entity_buffer));
-			}
 		}
 
 		++count;
 	}
 
+	//Free intermediates and close file.
 	free(entity_buffer);
 	free(cpy_buffer);
 	fclose(file_ptr);
@@ -222,7 +229,7 @@ void WorldToFile(struct sWorld_Data* wrld_data, const char* file_path)
 
 	//Create world header.
 	fwrite(&wrld_data->LevelCount, 1, 1, file_ptr);
-	//printf("Num lvls: %i\n", wrld_data->LevelCount);
+
 	unsigned char count = 0;
 
 	//Loop through levels and write the levels.
@@ -268,6 +275,7 @@ void WorldToFile(struct sWorld_Data* wrld_data, const char* file_path)
 	fclose(file_ptr);
 }
 
+//Destroy world data on teardown.
 void DestroyWorld(struct sWorld_Data** wrld_ptr)
 {
 	if(wrld_ptr != NULL && *wrld_ptr != NULL)
@@ -295,12 +303,14 @@ void DestroyWorld(struct sWorld_Data** wrld_ptr)
 	}
 }
 
+//Set the player entity associated with the world.
 void SetPlayerEntity(struct sWorld_Data* wrld, struct sEntity_Data* plyr_ent)
 {
 	if(wrld != NULL && plyr_ent != NULL)
 		wrld->Player = plyr_ent;
 }
 
+//Get a specified tile by vertex - integer or float (decimal ignored)
 struct sTile_Data* GetTileByInt(struct sLevel_Data* lvl, struct Int2D coords)
 {
 	return &lvl->TileData[coords.Y * lvl->Size.X + coords.X];

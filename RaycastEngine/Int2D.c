@@ -1,5 +1,6 @@
 #include "Int2D.h"
 
+//Arithmetic functions.
 struct Int2D iAdd(struct Int2D l, struct Int2D r)
 {
 	struct Int2D sum;
@@ -22,11 +23,11 @@ struct Int2D iMult(struct Int2D l, struct Int2D r)
 	return prod;
 }
 
+//Comparative functions.
 char iGreaterThan(struct Int2D l, struct Int2D r)
 {
     return l.Y > r.Y || l.Y == r.Y && l.X > r.X;
 }
-
 char iLessThan(struct Int2D l, struct Int2D r)
 {
     return l.Y < r.Y || l.Y == r.Y && l.X < r.X;
@@ -48,6 +49,7 @@ char iLessThanOrEqual(struct Int2D l, struct Int2D r)
     return l.Y < r.Y || l.Y == r.Y && l.X <= r.X;
 }
 
+//Vertex at (0,0)
 struct Int2D IntZero()
 {
 	struct Int2D zero;
@@ -55,11 +57,11 @@ struct Int2D IntZero()
 	return zero;
 }
 
+//Functions to convert vertex to array index or to array size.
 unsigned int iToIndex(struct Int2D pos, struct Int2D dim)
 {
 	return dim.X * pos.Y + pos.X;
 }
-
 unsigned int iToSize(struct Int2D dim)
 {
 	return dim.X * dim.Y;
