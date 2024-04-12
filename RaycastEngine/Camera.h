@@ -4,7 +4,7 @@
 
 //Constants for default view raycast settings.
 #define VIEW_MAX 64
-#define NUM_RAYS 256
+#define NUM_RAYS 257
 #define FIELD_OF_VIEW 1.57079633
 
 //Structure to hold all of the raw view data and settings.

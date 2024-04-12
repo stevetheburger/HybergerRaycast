@@ -24,7 +24,7 @@ struct sCamera* CreateCamera(double fov, unsigned int num_rays, struct Float2D l
 			ret_val->Distances = calloc(num_rays, sizeof(double));
 
 			//Allocates the angles array. Only half of the arc is calculated, as both halves are mirrored.
-			ret_val->Angles = malloc(sizeof(double) * num_rays/2);
+			ret_val->Angles = malloc(sizeof(double) * num_rays);
 			if(ret_val->Hits != NULL && ret_val->Distances != NULL && ret_val->Angles != NULL)
 			{
 				//If all allocations are successfull, initialize.
@@ -35,8 +35,8 @@ struct sCamera* CreateCamera(double fov, unsigned int num_rays, struct Float2D l
 
 				//Do calculation of angles through view plane in front of player, to ensure that the view angles are optimal.
 				double x_incr = tan(fov/2) * 2 / num_rays;
-				double x_start = x_incr / 2;
-				for(unsigned int i = 0; i < num_rays / 2; ++i)
+				double x_start =  x_incr/2-(num_rays / 2) * x_incr;
+				for(unsigned int i = 0; i < num_rays; ++i)
 				{
 					//Get angle.
 					ret_val->Angles[i] = atan(x_start);
@@ -169,22 +169,12 @@ void CalcVision(struct sCamera* cam, struct sLevel_Data* lvl)
 	struct Float2D ray_hit;
 
 	//Loop through all the rays and calculate the player's vision in the world against the walls.
-	while(ray_count < cam->NumRays)
+	for(unsigned int ray_cout; ray_count < cam->NumRays; ++ray_count)
 	{
 		//Calculate from the center to the left.
-		cam->Distances[ray_count] = CastRay(-cam->Angles[angle_count], cam->Look, cam->Location, lvl, &ray_hit, NULL);
+		cam->Distances[ray_count] = CastRay(cam->Angles[ray_count], cam->Look, cam->Location, lvl, &ray_hit, NULL);
 		//Store hit for overhead view.
 		cam->Hits[ray_count].X = ray_hit.X;
 		cam->Hits[ray_count].Y = ray_hit.Y;
-		++ray_count;
-
-		//Calculate from the center to the right.
-		cam->Distances[ray_count] = CastRay(cam->Angles[angle_count], cam->Look, cam->Location, lvl, &ray_hit, NULL);
-		//Store hit for overhead view.
-		cam->Hits[ray_count].X = ray_hit.X;
-		cam->Hits[ray_count].Y = ray_hit.Y;
-		++ray_count;
-
-		++angle_count;
 	}
 }
