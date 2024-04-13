@@ -52,12 +52,30 @@ void DrawPlayerViewFan(struct SDL_Renderer* renderer, struct sCamera* cam, struc
 	struct Float2D end, start = {0};
 	//Calculate starting coordinate.
 	start = WorldToViewCoord(cam->Location, view);
-	SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
 
 	//Loop through the rays, and draw them by grabbing the end points and factoring for the current position of the camera.
 	unsigned int count = 0;
 	while(count < cam->NumRays)
 	{
+		//Choose color from type for testing purposes.
+		switch(cam->HitType[count])
+		{
+			case 1:
+				SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
+				break;
+			case 2:
+				SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
+				break;
+			case 3:
+				SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
+				break;
+			case 4:
+				SDL_SetRenderDrawColor(renderer, 255, 255, 0, SDL_ALPHA_OPAQUE);
+				break;
+			default:
+				SDL_SetRenderDrawColor(renderer, 64, 64, 64, SDL_ALPHA_OPAQUE);
+		}
+
 		end = WorldToViewCoord(cam->Hits[count], view);
 		SDL_RenderDrawLine(renderer, (int)start.X, (int)start.Y, (int)end.X, (int)end.Y);
 
@@ -83,13 +101,24 @@ void DrawWorldOverhead(struct SDL_Renderer* renderer, struct sLevel_Data* lvl, s
 			wrld_coord.Y = count_y;
 			view_coord = WorldToViewCoord(wrld_coord, view);
 
-			//Color based on type.
-			if(lvl->TileData[count_y * lvl->Size.X + count_x].Type == 0)
-				SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
-			else if(lvl->TileData[count_y * lvl->Size.X + count_x].Type == 1)
-				SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
-			else
-				SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
+			//Choose color from type for testing purposes.
+			switch(lvl->TileData[count_y * lvl->Size.X + count_x].Type)
+			{
+				case 1:
+					SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
+					break;
+				case 2:
+					SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
+					break;
+				case 3:
+					SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
+					break;
+				case 4:
+					SDL_SetRenderDrawColor(renderer, 255, 255, 0, SDL_ALPHA_OPAQUE);
+					break;
+				default:
+					SDL_SetRenderDrawColor(renderer, 64, 64, 64, SDL_ALPHA_OPAQUE);
+			}
 
 			//Draw.
 			rect.x = (int)view_coord.X;

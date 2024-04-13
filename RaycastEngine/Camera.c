@@ -22,10 +22,12 @@ struct sCamera* CreateCamera(double fov, unsigned int num_rays, struct Float2D l
 			//Allocate the hits and distances arrays. Make sure they are zeroed.
 			ret_val->Hits = calloc(num_rays, sizeof(struct Float2D));
 			ret_val->Distances = calloc(num_rays, sizeof(double));
+			ret_val->HitType = calloc(num_rays, sizeof(unsigned short));
+			ret_val->XOrY = calloc(num_rays, sizeof(unsigned char));
 
 			//Allocates the angles array. Only half of the arc is calculated, as both halves are mirrored.
 			ret_val->Angles = malloc(sizeof(double) * num_rays);
-			if(ret_val->Hits != NULL && ret_val->Distances != NULL && ret_val->Angles != NULL)
+			if(ret_val->Hits != NULL && ret_val->Distances != NULL && ret_val->Angles != NULL && ret_val->HitType != NULL && ret_val->XOrY != NULL)
 			{
 				//If all allocations are successfull, initialize.
 				ret_val->Fov = fov;
@@ -63,6 +65,8 @@ void DestroyCamera(struct sCamera** cam)
 			if((*cam)->Angles != NULL) free((*cam)->Angles);
 			if((*cam)->Distances != NULL) free((*cam)->Distances);
 			if((*cam)->Hits != NULL) free((*cam)->Hits);
+			if((*cam)->HitType != NULL) free((*cam)->HitType);
+			if((*cam)->XOrY != NULL) free((*cam)->XOrY);
 			free(*cam);
 		}
 	}
@@ -78,69 +82,88 @@ void DestroyCamera(struct sCamera** cam)
 /// <param name="ray_hit">The float vertex that the ray hit a wall at</param>
 /// <param name="x_or_y">whether the wall is an x or a y hit (for lighting purposes)</param>
 /// <returns></returns>
-double CastRay(double ray_angle, double look_angle, struct Float2D origin, struct sLevel_Data* lvl, struct Float2D* ray_hit, char* x_or_y)
+double CastRay(double ray_angle, double look_angle, struct Float2D origin, struct sLevel_Data* lvl, struct Float2D* ray_hit, unsigned short* hit_type, unsigned char* x_or_y)
 {
 	//Create intermediary variables.
 	struct Float2D hit_x = {0}, hit_y = {0}, offset = {0};
 	//Angle is look the angle of the camera in the world added to the precalculated angle of the ray.
 	double angle = ray_angle + look_angle, distX=1024, distY=1024, tangent = tan(angle), cotangent = 1/tangent;
 	int count = 0, index;
+	unsigned short type_x=0, type_y=0;
 
 	//Ensure that the angle is normalized.
 	if(angle>=FULL_CIRCLE) angle-=FULL_CIRCLE; if(angle<0) angle+=FULL_CIRCLE;
 
 	//Set up increment.
 	//If East/Right
-	if(angle<QUARTER_CIRCLE || angle>THREE_QUARTER_CIRCLE) { hit_x.X = (int)origin.X + 1; hit_x.Y = tangent * (hit_x.X - origin.X) + origin.Y; offset.X = 1; offset.Y = offset.X * tangent; }
-	//If West/Left
-	else if(angle>QUARTER_CIRCLE && angle<THREE_QUARTER_CIRCLE) { hit_x.X = (int)origin.X; hit_x.Y = tangent * (hit_x.X - origin.X) + origin.Y; offset.X = -1; offset.Y = offset.X * tangent; }
+	if(angle<QUARTER_CIRCLE || angle>THREE_QUARTER_CIRCLE) { hit_x.X = (int)origin.X + 1; hit_x.Y = (hit_x.X - origin.X) * tangent + origin.Y; offset.X = 1; offset.Y = offset.X * tangent; }
+	//If West/Left. Subtracts a small float from the origin to prevent having to check both neighbors of a wall.
+	else if(angle>QUARTER_CIRCLE && angle<THREE_QUARTER_CIRCLE) { hit_x.X = (int)origin.X - 0.0000001; hit_x.Y = (hit_x.X - origin.X) * tangent + origin.Y; offset.X = -1; offset.Y = offset.X * tangent; }
 
 	//Calculate incrementally for vertical walls until limit is reached or wall hit.
 	while(count < VIEW_MAX)
 	{
-		//Calculate index for array.
 		index = (int)hit_x.Y * lvl->Size.X + (int)hit_x.X;
+		//Calculate index for array.
 		if
 		(
 			hit_x.Y < lvl->Size.Y && 
 			hit_x.Y >= 0 && 
-			(lvl->TileData[index].Type || lvl->TileData[index - 1].Type)
+			lvl->TileData[index].Type
 		)
 		{
 			//If wall is hit, do distance formula on hit and set to return it.
 			distX = sqrt((origin.X-hit_x.X)*(origin.X-hit_x.X) + (origin.Y-hit_x.Y)*(origin.Y-hit_x.Y));
+			//Get type of wall.
+			type_x = lvl->TileData[index].Type;
 			break;
 		}
 		//If no hit, do next increment.
-		else { hit_x.X += offset.X; hit_x.Y += offset.Y; ++count; }
+		else 
+		{ 
+			hit_x.X += offset.X;
+			hit_x.Y += offset.Y;
+			hit_x.X = round(hit_x.X*10000000)/10000000;
+			hit_x.Y = round(hit_x.Y*10000000)/10000000;
+			++count; 
+		}
 	}
 
 	//Reset counter for horizontal walls.
 	count = 0;
 	//Set up increment.
 	//If North/"Up"
-	if(angle<M_PI) { hit_y.Y = (int)origin.Y + 1; hit_y.X = cotangent * (hit_y.Y - origin.Y) + origin.X; offset.Y = 1; offset.X = offset.Y * cotangent; }
-	//If South/"Down"
-	else if(angle>M_PI) { hit_y.Y = (int)origin.Y; hit_y.X = cotangent * (hit_y.Y - origin.Y) + origin.X; offset.Y = -1; offset.X = offset.Y * cotangent; }
+	if(angle<M_PI) { hit_y.Y = (int)origin.Y + 1; hit_y.X = (hit_y.Y - origin.Y) * cotangent + origin.X; offset.Y = 1; offset.X = offset.Y * cotangent; }
+	//If South/"Down". Subtracts a small float from the origin to prevent having to check both neighbors of a wall.
+	else if(angle>M_PI) { hit_y.Y = (int)origin.Y - 0.0000001; hit_y.X = (hit_y.Y - origin.Y) * cotangent + origin.X; offset.Y = -1; offset.X = offset.Y * cotangent; }
 
 	//Calculate incrementally for horizontal walls until limit is reached or wall hit.
 	while(count < VIEW_MAX)
 	{
+		index = (int)hit_y.Y * lvl->Size.X + (int)(hit_y.X);
 		//Calculate index for array.
-		index = (int)hit_y.Y * lvl->Size.X + (int)hit_y.X;
 		if
 		(	
 			hit_y.X < lvl->Size.X && 
 			hit_y.X >= 0 && 
-			(lvl->TileData[index].Type || lvl->TileData[index - lvl->Size.X].Type)
+			lvl->TileData[index].Type
 		)
 		{
 			//If wall is hit, do distance formula on hit and set to return it.
 			distY = sqrt((origin.X-hit_y.X)*(origin.X-hit_y.X) + (origin.Y-hit_y.Y)*(origin.Y-hit_y.Y));
+			//Get type of wall.
+			type_y = lvl->TileData[index].Type;
 			break;		
 		}
 		//If no hit, do next increment.
-		else { hit_y.X += offset.X; hit_y.Y += offset.Y; ++count; }
+		else
+		{ 
+			hit_y.X += offset.X; 
+			hit_y.Y += offset.Y;
+			hit_y.X = round(hit_y.X*10000000)/10000000;
+			hit_y.Y = round(hit_y.Y*10000000)/10000000;
+			++count; 
+		}
 	}
 
 	//Check if vertical or horizontal distance is shorter. Return the shorter distance.
@@ -148,6 +171,7 @@ double CastRay(double ray_angle, double look_angle, struct Float2D origin, struc
 	{
 		if(x_or_y != NULL) *x_or_y = 1;
 		if(ray_hit != NULL) { ray_hit->X = hit_x.X; ray_hit->Y = hit_x.Y; }
+		if(hit_type != NULL) { *hit_type = type_x; }
 		//Return perpindicular distance in order to correct for fish-eye view.
 		return distX * cos(ray_angle);
 	}
@@ -155,6 +179,7 @@ double CastRay(double ray_angle, double look_angle, struct Float2D origin, struc
 	{
 		if(x_or_y != NULL) *x_or_y = 0;
 		if(ray_hit != NULL) { ray_hit->X = hit_y.X; ray_hit->Y = hit_y.Y; }
+		if(hit_type != NULL) { *hit_type = type_y; }
 		//Return perpindicular distance in order to correct for fish-eye view.
 		return distY * cos(ray_angle);
 	}
@@ -162,19 +187,20 @@ double CastRay(double ray_angle, double look_angle, struct Float2D origin, struc
 
 void CalcVision(struct sCamera* cam, struct sLevel_Data* lvl)
 {
-	//Counters.
-	unsigned int ray_count = 0;
-	unsigned int angle_count = 0;
 	//Intermediate variable.
 	struct Float2D ray_hit;
+	unsigned short type;
+	char x_or_y;
 
 	//Loop through all the rays and calculate the player's vision in the world against the walls.
-	for(unsigned int ray_cout; ray_count < cam->NumRays; ++ray_count)
+	for(unsigned int ray_count = 0; ray_count < cam->NumRays; ++ray_count)
 	{
 		//Calculate from the center to the left.
-		cam->Distances[ray_count] = CastRay(cam->Angles[ray_count], cam->Look, cam->Location, lvl, &ray_hit, NULL);
+		cam->Distances[ray_count] = CastRay(cam->Angles[ray_count], cam->Look, cam->Location, lvl, &ray_hit, &type, &x_or_y);
 		//Store hit for overhead view.
 		cam->Hits[ray_count].X = ray_hit.X;
 		cam->Hits[ray_count].Y = ray_hit.Y;
+		cam->HitType[ray_count] = type;
+		cam->XOrY[ray_count] = x_or_y;
 	}
 }

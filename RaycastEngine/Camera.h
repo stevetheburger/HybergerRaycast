@@ -17,6 +17,8 @@ struct sCamera
 	double* Angles; //The pre-calculated angles at which to cast the rays. 
 	double* Distances; //The perpindicular distances from the environment ahead.
 	struct Float2D* Hits; //The wall hits of the rays.
+	unsigned short* HitType; //The type of wall hit.
+	unsigned char* XOrY; //Whether a vertical or horizontal wall has been hit.
 };
 
 //Creates camera object with specified field of view, specified number of rays at specified position, angle,
@@ -25,6 +27,6 @@ struct sCamera* CreateCamera(double, unsigned int, struct Float2D, double);
 void DestroyCamera(struct sCamera**); 
 
 //Casts a ray.
-double CastRay(double, double, struct Float2D, struct sLevel_Data*, struct Float2D*, char*);
+double CastRay(double, double, struct Float2D, struct sLevel_Data*, struct Float2D*, unsigned short*, unsigned char*);
 //Does vision calculation for the first person view.
 void CalcVision(struct sCamera*, struct sLevel_Data*);

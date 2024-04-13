@@ -7,7 +7,7 @@
 struct sTile_Data
 {
 	struct Int2D Location;
-	unsigned char Type;
+	unsigned short Type;
 };
 
 //Structure for the level data - 2D plane of squares
