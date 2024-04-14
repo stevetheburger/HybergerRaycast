@@ -11,29 +11,16 @@ struct sApplication* CreateApplication(const char* window_title, int window_x, i
 	//Allocate the application structure.
 	struct sApplication* app = NULL;
 	if((app = malloc(sizeof(struct sApplication))) == NULL)
-		return NULL;
+		goto BAD_ALLOC;
 	//Allocate SDL window structure, using macro values defined at the top of this file.
 	if((app->window = SDL_CreateWindow(window_title, window_x, window_y, window_w, window_h, 0)) == NULL)
-	{
-		free(app);
-		return NULL;
-	}
+		goto BAD_ALLOC;
 	//Allocate SDL renderer structure.
 	if((app->render = SDL_CreateRenderer(app->window, -1, 0)) == NULL)
-	{
-		SDL_DestroyWindow(app->window);
-		free(app);
-		return NULL;
-	}
+		goto BAD_ALLOC;
 	//Allocate SDL mutex that blocks for the application status.
 	if((app->run_mtx = SDL_CreateMutex()) == NULL)
-	{
-		SDL_DestroyWindow(app->window);
-		SDL_DestroyRenderer(app->render);
-		free(app);
-
-		return NULL;
-	}
+		goto BAD_ALLOC;
 
 	//Initialize application state.
 	app->run_state = 1;
@@ -47,6 +34,10 @@ struct sApplication* CreateApplication(const char* window_title, int window_x, i
 	app->ovrhd.CameraPositionInWrld.X = app->ovrhd.CameraPositionInWrld.Y = app->frstprsn.CameraPositionInWrld.X = app->frstprsn.CameraPositionInWrld.Y = 0.0;
 
 	return app;
+
+	BAD_ALLOC:
+	DestroyApplication(&app);	
+	return NULL;
 }
 
 //Handles cleanup for the application object.
