@@ -18,6 +18,32 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\Application.c" />
+    <ClCompile Include="Source\Camera.c" />
+    <ClCompile Include="Source\Entity.c" />
+    <ClCompile Include="Source\EntityQueue.c" />
+    <ClCompile Include="Source\Float2D.c" />
+    <ClCompile Include="Source\Int2D.c" />
+    <ClCompile Include="Source\Main.c" />
+    <ClCompile Include="Source\Overhead.c" />
+    <ClCompile Include="Source\Utils.c" />
+    <ClCompile Include="Source\Viewport.c" />
+    <ClCompile Include="Source\World.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Headers\Application.h" />
+    <ClInclude Include="Headers\Camera.h" />
+    <ClInclude Include="Headers\Entity.h" />
+    <ClInclude Include="Headers\EntityQueue.h" />
+    <ClInclude Include="Headers\Float2D.h" />
+    <ClInclude Include="Headers\Int2D.h" />
+    <ClInclude Include="Headers\Overhead.h" />
+    <ClInclude Include="Headers\TrigConstants.h" />
+    <ClInclude Include="Headers\Utils.h" />
+    <ClInclude Include="Headers\Viewport.h" />
+    <ClInclude Include="Headers\World.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -71,26 +97,26 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>E:\Frameworks\SDL2\include;$(IncludePath)</IncludePath>
+    <IncludePath>E:\Frameworks\SDL2\include;$(ProjectDir)Headers;$(IncludePath)</IncludePath>
     <LibraryPath>E:\Frameworks\SDL2\lib\x64;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
     <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>E:\Frameworks\SDL2\include;$(IncludePath)</IncludePath>
+    <IncludePath>E:\Frameworks\SDL2\include;$(ProjectDir)Headers;$(IncludePath)</IncludePath>
     <LibraryPath>E:\Frameworks\SDL2\lib\x64;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
     <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>E:\Frameworks\SDL2\include;$(IncludePath)</IncludePath>
+    <IncludePath>E:\Frameworks\SDL2\include;$(ProjectDir)Headers;$(IncludePath)</IncludePath>
     <ReferencePath>$(ReferencePath)</ReferencePath>
     <OutDir>$(SolutionDir)x86\$(Configuration)\</OutDir>
     <IntDir>obj\x86\$(Configuration)\</IntDir>
     <LibraryPath>E:\Frameworks\SDL2\lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>E:\Frameworks\SDL2\include;$(IncludePath)</IncludePath>
+    <IncludePath>E:\Frameworks\SDL2\include;$(ProjectDir)Headers;$(IncludePath)</IncludePath>
     <ReferencePath>$(ReferencePath)</ReferencePath>
     <OutDir>$(SolutionDir)x86\$(Configuration)\</OutDir>
     <IntDir>obj\x86\$(Configuration)\</IntDir>
@@ -107,7 +133,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>E:\Frameworks\SDL2\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy "E:\Frameworks\SDL2\lib\x86\SDL2.dll" "$(OutDir)"</Command>
@@ -128,7 +154,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <AdditionalLibraryDirectories>E:\Frameworks\SDL2\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy "E:\Frameworks\SDL2\lib\x86\SDL2.dll" "$(OutDir)"</Command>
@@ -145,7 +171,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>E:\Frameworks\SDL2\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy "E:\Frameworks\SDL2\lib\x64\SDL2.dll" "$(OutDir)"</Command>
@@ -166,36 +192,12 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <AdditionalLibraryDirectories>E:\Frameworks\SDL2\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy "E:\Frameworks\SDL2\lib\x64\SDL2.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="Application.c" />
-    <ClCompile Include="Camera.c" />
-    <ClCompile Include="Entity.c" />
-    <ClCompile Include="EntityQueue.c" />
-    <ClCompile Include="Float2D.c" />
-    <ClCompile Include="Int2D.c" />
-    <ClCompile Include="Main.c" />
-    <ClCompile Include="Overhead.c" />
-    <ClCompile Include="Viewport.c" />
-    <ClCompile Include="World.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Application.h" />
-    <ClInclude Include="Camera.h" />
-    <ClInclude Include="Entity.h" />
-    <ClInclude Include="EntityQueue.h" />
-    <ClInclude Include="Float2D.h" />
-    <ClInclude Include="Int2D.h" />
-    <ClInclude Include="Overhead.h" />
-    <ClInclude Include="TrigConstants.h" />
-    <ClInclude Include="Viewport.h" />
-    <ClInclude Include="World.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
