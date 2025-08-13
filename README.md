@@ -1,5 +1,8 @@
 # HybergerRaycast
 
+Credit to 3DSage (https://www.youtube.com/@3DSage) for providing the instruction and raycast algorithms necessary for this project to work.
+Raycast tutorial: https://www.youtube.com/watch?v=gYRrGTC7GtA&t=17s
+
 Overview:
  This program was developed to embed SDL instead of using OpenGL directly with the dll as in the tutorial.
 
